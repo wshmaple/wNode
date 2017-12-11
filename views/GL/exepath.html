@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>报表维护</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+
+    <!-- Data Tables -->
+    <link href="css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+
+    <link href="css/animate.min.css" rel="stylesheet">
+    <link href="css/style.min862f.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="./angular-datatables/dist/css/angular-datatables.css">
+
+    <link href="css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+
+</head>
+<body>
+
+<div ng-app ="myModule" >
+
+    <div ng-controller="AngularWayChangeDataCtrl as showCase" >
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>成绩报表维护</h5>
+                    </div>
+
+                    <div class="ibox-content">
+                        <div>
+
+                            <button  type="button" class="btn btn-primary" ng-click="showCase.lookSome()">
+                                查询
+                            </button>
+                            <button  type="button" class="btn btn-primary" ng-click="showCase.selectAll()">
+                                查看全部
+                            </button>
+                            <button  type="button" class="btn btn-primary" >
+                                导出综合报表
+                            </button>
+                            <button  type="button" class="btn btn-primary" >
+                                导出详细报表
+                            </button>
+
+                        </div>
+
+                        <div >
+
+                            <form class="form-inline" >
+                                <table border="1" datatable="ng" dt-options="showCase.dtOptions" dt-column-defs="showCase.dtColumnDefs" class="row-border hover">
+                                    <thead>
+                                    <tr>
+                                        <th>索引</th>
+
+                                        <th>姓名</th>
+                                        <th>性别</th>
+                                        <th>身份证号</th>
+                                        <th>期号</th>
+                                        <th>分值</th>
+                                        <th>开始时间</th>
+                                        <th>结束时间</th>
+                                        <th>操作</th>
+                                        <th>操作ID</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-repeat="item in showCase.SafeItems">
+                                        <td width="30">{{ $index +1}}</td>
+
+                                        <td width="380">{{ item.uname }}</td>
+                                        <td width="380">{{ item.usex }}</td>
+                                        <td width="380">{{ item.uidnumber }}</td>
+                                        <td width="380">{{ item.uqihao }}</td>
+                                        <td width="380">{{ item.score }}</td>
+                                        <td width="380">{{ item.begintime| date:'yyyy-MM-dd HH:mm:ss' }}</td>
+                                        <td width="380">{{ item.endtime | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                                        <td width="30">
+                                            <span  ng-click="showCase.lookItem($index)" class="btn btn-success btn-xs">详细报表</span>
+                                        </td>
+                                        <td width="380">{{ item.id }}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </form>
+
+
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div  class="modal fade" id="reEditModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog"  >
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">关闭</span></button>
+                        <h4 class="modal-title " id="myModalLabel">弹框</h4>
+                    </div>
+
+                    <div class="modal-body" ng-controller="pCtrl">
+                        <form role="form" >
+                            <div class="ibox float-e-margins">
+                                <div  class="wrapper wrapper-content animated fadeInRight">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="ibox float-e-margins">
+                                                <div width="380">姓名：{{tmpDatatmp.uname}}</div>
+                                                <div width="380">性别：
+                                                    {{tmpDatatmp.usex}}
+                                                </div>
+                                                <div width="380">身份证号：{{tmpDatatmp.uidnumber}}</div>
+
+                                                <div width="380">期号：{{tmpDatatmp.uqihao}}</div>
+                                                <div width="380">桌位号：{{detailspaper.other.deskid}}</div>
+                                                <div width="380">得分：{{detailspaper.value.fTotalScore}}</div>
+                                                <br/>
+                                              <div>试卷内容</div>
+                                                <div class="row">
+                                                    <div class="col-md-12">
+
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <table class="table" >
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>编号</th>
+                                                                    <th>锅炉类型</th>
+                                                                    <th>题目分类</th>
+                                                                    <th>题目名称</th>
+                                                                    <th>得分</th>
+
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr ng-repeat="x in detailspaper.value.paper  ">
+                                                                    <td>{{$index + 1}}</td>
+                                                                    <td>{{x.boilertype}}</td>
+                                                                    <td>{{x.opertype}}</td>
+                                                                    <td>{{x.caption}}</td>
+                                                                    <td>{{x.fUserScore}}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div ng-show="false" class="row">
+
+                                                    <div class="col-md-12">
+                                                        <table class="table" >
+                                                            <thead>
+                                                            <tr>
+                                                                <th>编号</th>
+                                                                <th>锅炉类型</th>
+                                                                <th>题目分类</th>
+                                                                <th>题目名称</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            <tr ng-repeat="x in details ">
+                                                                <td>{{$index + 1}}</td>
+                                                                <td>{{x.t1.boilertype.caption}}</td>
+                                                                <td>{{x.t1.opertype.caption}}</td>
+                                                                <td>{{x.t1.caption}}</td>
+                                                            </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <div ng-repeat="x in details ">
+                                                            {{$index + 1}}
+
+                                                            {{x.t1.opertype.caption}}
+                                                            {{x.t1.boilertype.caption}}
+                                                            {{x.t1.caption}}
+                                                            <table border="1">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th>序号</th>
+                                                                    <th>优先级</th>
+                                                                    <th>内容</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                <tr  ng-repeat="t in x.t1.step">
+                                                                    <th align="center" >{{$index+1}}</th>
+                                                                    <th align="center" ><div align="center"  style="color:#090dff">{{t.blevel}}</div></th>
+                                                                    <th>
+                                                                        <table border="1">
+                                                                            <thead>
+                                                                            <tr>
+                                                                                <th>序号</th>
+                                                                                <th align="center" >优先级</th>
+                                                                                <th align="center" style="width: 200px">内容</th>
+                                                                            </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                            <tr  ng-repeat="s in t.step">
+                                                                                <th align="center" >{{$index+1}}</th>
+                                                                                <th align="center" ><div align="center" style="color:#674fff">{{s.level}}</div></th>
+                                                                                <th align="center" style="width: 200px">
+                                                                                    <span style="color:#0001ff">{{s.key_caption }}</span>
+                                                                                    <span style="color:#3732ff">{{s.value_caption }}</span>
+                                                                                </th>
+                                                                            </tr>
+                                                                            </tbody>
+
+                                                                        </table>
+                                                                    </th>
+                                                                </tr>
+                                                                </tbody>
+
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>操作记录</div>
+                                                <div class="row">
+                                                    <div class="col-md-12">
+
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <table class="table" >
+                                                            <thead>
+                                                            <tr>
+                                                                <th>编号</th>
+                                                                <th>用户操作</th>
+                                                                <th>判定</th>
+                                                                <th>时间</th>
+
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            <tr ng-repeat="x in detailsoper ">
+                                                                <td>{{$index + 1}}</td>
+                                                                <td>{{x.opercaption}}</td>
+                                                                <td>{{x.bUserAnswerRight}}</td>
+                                                                <td>{{x.begintime | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                                                            </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default"
+                                            data-dismiss="modal">关闭
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="js/jquery.min.js?v=2.1.4"></script>
+<script src="js/bootstrap.min.js?v=3.3.6"></script>
+<!-- angularjs -->
+<script type="text/javascript" src="/angularjs/angular.js"></script>
+
+<script src="js/plugins/jeditable/jquery.jeditable.js"></script>
+<script src="js/plugins/dataTables/jquery.dataTables.js"></script>
+<script src="./angular-datatables/dist/angular-datatables.min.js"></script>
+<script src="./file-saver/filesaver.min.js"></script>
+<script src="js/plugins/dataTables/dataTables.bootstrap.js"></script>
+<script type="text/javascript" src="/js/plugins/toastr/toastr.js"></script>
+
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "onclick": null,
+        "showDuration": "400",
+        "hideDuration": "1000",
+        "timeOut": "7000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+</script>
+<script >
+    //var
+    var myApp =  angular.module('myModule', ['datatables'])
+            .controller('AngularWayChangeDataCtrl', function ($scope,Data,tmpData, DTOptionsBuilder, DTColumnDefBuilder){
+                var vm = this;
+                vm.SafeItems=[];
+                vm.exportStudentMsg = [];
+
+                vm.dtOptions = DTOptionsBuilder.newOptions().withPaginationType('full_numbers');
+                vm.dtColumnDefs = [
+                    DTColumnDefBuilder.newColumnDef(0)
+                    //   DTColumnDefBuilder.newColumnDef(1).notSortable()
+                ];
+                vm.lookItem = lookItem;
+                vm.selectAll = selectAll;
+                function selectAll (){
+                    $.ajax({
+                        method : 'post',
+                        url : '/reportSelect',
+                        data:"",
+                        success:function(resp){
+                            var data2 = resp.data;
+                            if(resp.code === "0" || resp.code === 0 ){
+                                vm.SafeItems=[];
+                                console.log(data2);
+                                vm.SafeItems = data2;
+                                $scope.$apply();
+                            }
+                            else
+                            {
+                                console.log("查询失败了");
+                                toastr.error('查询失败了', '系统消息');
+                            }
+                        },
+                        error:function(resp){
+                            /* Act on the event */
+                            console.log('aa');
+                        }
+                    });
+                }
+
+
+                function lookItem(index) {
+                    var msg = new Object();
+                    msg = vm.SafeItems[index];
+                    $scope.$broadcast("Ctr1DataChange",index,msg);
+                    $('#reEditModal').modal({
+                        keyboard: true
+                    });
+
+                }
+            })
+            .controller('pCtrl',function($scope,$http){
+                $scope.tmpDatatmp =[];
+                $scope.details = {};
+                $scope.detailsoper = {};
+                $scope.detailspaper = {};
+                $scope.$on("Ctr1DataChange",function (event,Pos, msg) {
+                            $scope.Pos = Pos;
+                            $scope.tmpDatatmp = msg;
+                            console.log(msg);
+                            // 请求试卷
+                           //  $scope.lookDetail(msg.paperid);
+
+                             // 解析试卷
+                            $scope.detailspaper = JSON.parse(msg.detail);
+                            console.log($scope.detailspaper);
+
+
+                            // 请求操作记录
+                            $scope.lookDetailOper(msg.id);
+
+                        });
+                $scope.lookDetail = function (paperid){
+                    // 查看做的试卷
+                 //   $scope.userInfoid = userid;
+                    $.ajax({
+                        method : 'get',
+                        url : '/getpaperbyid',
+                        data:{
+                            paperid:paperid
+                        },
+                        success:function(resp){
+                            if(resp.code === "0" || resp.code === 0 ){
+                                console.log(resp.data);
+                                //toastr.success('查询成功了', '系统消息');
+                                $scope.details = resp.data;
+                                $scope.$apply();
+
+                            }
+                            else
+                            {
+                                //	toastr.error('操作失败！', '系统消息');
+                            }
+                        },
+                        error:function(resp){
+                            console.log('aa');
+                        }
+                    });
+
+
+                };
+                $scope.lookDetailOper = function (scoreid){
+                    // 查看做的试卷
+                    //   $scope.userInfoid = userid;
+                    $.ajax({
+                        method : 'post',
+                        url : '/getDetailOper',
+                        data:{
+                            scoreid:scoreid
+                        },
+                        success:function(resp){
+                            if(resp.code === "0" || resp.code === 0 ){
+                                console.log(resp.data);
+                                //toastr.success('查询成功了', '系统消息');
+                                $scope.detailsoper = resp.data;
+                                $scope.$apply();
+
+                            }
+                            else
+                            {
+                                //	toastr.error('操作失败！', '系统消息');
+                            }
+                        },
+                        error:function(resp){
+                            console.log('aa');
+                        }
+                    });
+
+
+                }
+            });
+    myApp.factory('Data', function() {
+        return[];
+    });
+    myApp.factory('tmpData', function() {
+        return [];
+    });
+</script>
+
+
+</body>
+</html>

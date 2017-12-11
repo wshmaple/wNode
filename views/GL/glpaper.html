@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>试卷维护</title>
+
+    <link href="css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <!-- Data Tables -->
+    <link href="css/animate.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./angular-datatables/dist/css/angular-datatables.css">
+    <link href="css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+    <link href="css/style.min862f.css?v=4.1.0" rel="stylesheet">
+    <link href="css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="./highlight.js/styles/dark.css">
+    <style type="text/css">
+        .td{border:solid #add9c0; border-width:0px 1px 1px 0px; padding:10px 0px;}
+        .table{border:solid #add9c0; border-width:1px 0px 0px 1px;}
+    </style>
+    <style type="text/css">
+             label {
+            padding: 5px 10px;
+                    border: 1px solid #fff;
+               }
+            .error {
+                    border-color: #f00;
+                   }
+            </style>
+    <style type="text/css">
+        .lightblue{background-color: lightblue;}
+        .red{color: red;}
+        .green{color: green;}
+    </style>
+</head>
+<body>
+<div>
+    <div ng-app ="myModule" >
+
+
+        <div ng-controller="AngularWayChangeDataCtrl as showCase" >
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-title">
+                            <h5>试卷列表</h5>
+                        </div>
+
+                        <div class="ibox-content">
+                            <div>
+                                <button  type="button" class="btn btn-primary" ng-click="showCase.addItemOne()">
+                                    增加
+                                </button>
+                                <button  ng-show="false" type="button" class="btn btn-primary" ng-click="showCase.lookSome()">
+                                    查询
+                                </button>
+                                <button  type="button" class="btn btn-primary" ng-click="showCase.selectAll()">
+                                    查看全部
+                                </button>
+
+                            </div>
+
+                            <div >
+
+                                <form class="form-inline" ng-submit="showCase.addPerson()">
+                                    <table border="1" datatable="ng" dt-options="showCase.dtOptions" dt-column-defs="showCase.dtColumnDefs" class="row-border hover">
+                                        <thead>
+                                        <tr>
+                                            <th align="center">索引</th>
+                                            <th align="center">锅炉类型</th>
+
+                                            <th align="center">试卷名称</th>
+                                            <th align="center">分类</th>
+                                            <th align="center">试卷时间</th>
+
+                                            <th align="center">时间</th>
+                                            <th align="center">备注</th>
+
+                                            <th align="center">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr ng-repeat="item in showCase.SafeItems">
+                                            <td align="center" width="30">{{ $index +1}}</td>
+                                            <td align="center" width="150">{{ item.boilertype}}</td>
+
+                                            <td align="center" width="380">{{ item.caption }}</td>
+                                            <td align="center" width="40">{{ item.selectg }}</td>
+                                            <td align="center" width="30">{{ item.tmexam }}</td>
+
+                                            <td align="center" width="100">{{ item.time | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                                            <td align="center" width="100">{{ item.remark }}</td>
+
+                                            <td align="center" width="150">
+                                                <span  ng-click="showCase.ShowPaper($index)" class="btn btn-success btn-xs">查看</span>
+                                                <span  ng-click="showCase.changeItem($index)" class="btn btn-success btn-xs">修改</span>
+
+                                                <span  ng-click="showCase.removeSafeItems($index)" class="btn btn-danger btn-xs">删除</span>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </form>
+
+
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div  class="modal fade" id="reEditModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog" style="width: 1000px;  background-color: blue" ng-style="style" >
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">关闭</span></button>
+                            <h4 class="modal-title " id="myModalLabel">弹框</h4>
+                        </div>
+
+                        <div class="modal-body" ng-controller="pCtrl">
+                            <form role="form" >
+                                <div class="ibox float-e-margins">
+                                    <div  class="wrapper wrapper-content animated fadeInRight">
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="ibox float-e-margins" >
+                                                    <div><button ng-click="CheckNull()">check</button></div>
+                                                    <h1>试卷名称：</h1>
+                                                    <textarea rows="1" cols="80" ng-model="dbcaption" placeholder="试卷名称" name="dbcaption"  >{{dbcaption}}</textarea>
+                                                    <span style="color:red" ng-show="!dbcaption.length">必须填</span>
+                                                    <h1>备注：</h1>
+                                                    <textarea rows="2" cols="80" ng-model="dbremark" placeholder="备注">{{dbremarkTmp}}</textarea>
+
+                                                    <div>考核时间：<input type="number" ng-model="tmexam" min="1" placeholder="输入考试时间"  >分钟
+                                                        {{tmexam<0}}
+                                                       <span style="color:red" ng-show="(tmexam<1)">输入不正确
+
+                                                      </span>
+                                                    </div>
+
+                                                    <div>
+                                                        试卷分类：
+                                                        <select ng-model="selectG" ng-options="s.caption   for s in xType.tTypeG" >
+                                                        </select>
+                                                    </div>
+
+                                                    <div ng-show="xtreeItem.items.length">
+                                                        锅炉类型：
+                                                        <select ng-model="selected" ng-options="s.caption + s.key  for s in xtreeItem.items"  >
+                                                            <option value="">--请选择--</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div ng-show="selected.caption.length">
+                                                        <h1>认知题目</h1>
+                                                        <table border="1">
+                                                            <thead>
+                                                            <tr>
+                                                                <th>编号</th>
+                                                                <th>操作</th>
+                                                                <th>类型</th>
+                                                                <th>名称</th>
+                                                                <th>难度</th>
+                                                                <th>备注</th>
+
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            <tr ng-repeat="x in qItems | filter:'认知题目' | filter:selected.caption">
+                                                                <td>{{$index}}</td>
+                                                                <td><input type="radio"  name="name1" ng-value="x.id" ng-model="formData.state1" /> </td>
+                                                                <td>{{x.boilertype}}</td>
+                                                                <td>{{x.caption}}</td>
+                                                                <td>{{x.hard}}</td>
+                                                                <td>{{x.remark}}</td>
+
+                                                            </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h1>运行题目</h1>
+                                                        <table border="1">
+                                                            <thead>
+                                                            <tr>
+                                                                <th>编号</th>
+                                                                <th>操作</th>
+                                                                <th>类型</th>
+                                                                <th>名称</th>
+                                                                <th>难度</th>
+                                                                <th>备注</th>
+
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            <tr ng-repeat="x in qItems | filter:'运行题目'| filter:selected.caption">
+                                                                <td>{{$index}}</td>
+                                                                <td><input type="radio"  name="name2" ng-value="x.id" ng-model="formData.state2" /> </td>
+                                                                <td>{{x.boilertype}}</td>
+                                                                <td>{{x.caption}}</td>
+                                                                <td>{{x.hard}}</td>
+                                                                <td>{{x.remark}}</td>
+
+                                                            </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h1>事故题目</h1>
+                                                        <table border="1">
+                                                            <thead>
+                                                            <tr>
+                                                                <th>编号</th>
+                                                                <th>操作</th>
+                                                                <th>类型</th>
+                                                                <th>名称</th>
+                                                                <th>难度</th>
+                                                                <th>备注</th>
+
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            <tr ng-repeat="x in qItems | filter:'事故题目' | filter:selected.caption">
+                                                                <td>{{$index}}</td>
+                                                                <td><input type="radio"  name="name3" ng-value="x.id" ng-model="formData.state3" /> </td>
+                                                                <td>{{x.boilertype}}</td>
+                                                                <td>{{x.caption}}</td>
+                                                                <td>{{x.hard}}</td>
+                                                                <td>{{x.remark}}</td>
+
+                                                            </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+
+
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div>
+
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default"
+                                                data-dismiss="modal">关闭
+                                        </button>
+                                        <button id="btnModify" type="button" ng-click="btnSubmit()" class="btn btn-primary">
+                                            提交
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div  class="modal fade" id="reEditModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog" style="width: 700px;  background-color: blue" ng-style="style" >
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">关闭</span></button>
+                            <h4 class="modal-title ">弹框</h4>
+                        </div>
+
+                        <div class="modal-body" ng-controller="pCtrl2">
+                            <form role="form" >
+                                <div class="ibox float-e-margins">
+                                    <div  class="wrapper wrapper-content animated fadeInRight">
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="ibox float-e-margins" >
+
+                                                    <div ng-show="true" class="row">
+
+                                                        <div class="col-md-12">
+                                                            <table class="table" >
+                                                                <thead>
+                                                                <tr>
+                                                                    <th>编号</th>
+                                                                    <th>锅炉类型</th>
+                                                                    <th>题目分类</th>
+                                                                    <th>题目名称</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                <tr ng-repeat="x in details ">
+                                                                    <td>{{$index + 1}}</td>
+                                                                    <td>{{x.t1.boilertype.caption}}</td>
+                                                                    <td>{{x.t1.opertype.caption}}</td>
+                                                                    <td>{{x.t1.caption}}</td>
+                                                                </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+
+                                                    </div>
+                                                    <div>
+                                                        <div class="row">
+                                                            <div class="col-md-12">
+                                                                <div ng-repeat="x in details ">
+                                                                    <hr>
+                                                                    {{$index + 1}}
+                                                                    {{x.t1.opertype.caption}}
+                                                                    {{x.t1.boilertype.caption}}
+                                                                    {{x.t1.caption}}
+                                                                    <table border="1">
+                                                                        <thead>
+                                                                        <tr>
+                                                                            <th>序号</th>
+                                                                            <th>优先级</th>
+                                                                            <th>内容</th>
+                                                                        </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                        <tr  ng-repeat="t in x.t1.step">
+                                                                            <th align="center" >{{$index+1}}</th>
+                                                                            <th align="center" ><div align="center"  style="color:#090dff">{{t.blevel}}</div></th>
+                                                                            <th>
+                                                                                <table  border="1">
+                                                                                    <thead>
+                                                                                    <tr>
+                                                                                        <th align="center" style="width: 50px">序号</th>
+                                                                                        <th align="center" style="width: 50px">优先级</th>
+                                                                                        <th align="center" style="width: 200px">内容</th>
+                                                                                    </tr>
+                                                                                    </thead>
+                                                                                    <tbody>
+                                                                                    <tr  ng-repeat="s in t.step">
+                                                                                        <th align="center" style="width: 50px">{{$index+1}}</th>
+                                                                                        <th align="center" style="width: 50px"><div align="center" style="color:#674fff">{{s.level}}</div></th>
+                                                                                        <th align="center" style="width: 200px">
+                                                                                            <span style="color:#0001ff">{{s.key_caption }}</span>
+                                                                                            <span style="color:#3732ff">{{s.value_caption }}</span>
+                                                                                        </th>
+                                                                                    </tr>
+                                                                                    </tbody>
+
+                                                                                </table>
+                                                                            </th>
+                                                                        </tr>
+                                                                        </tbody>
+
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div>
+
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default"
+                                                data-dismiss="modal">关闭
+                                        </button>
+
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+<script src="js/jquery.min.js?v=2.1.4"></script>
+<script src="js/bootstrap.min.js?v=3.3.6"></script>
+<!-- angularjs -->
+<script type="text/javascript" src="/angularjs/angular.js"></script>
+<script src="js/plugins/jeditable/jquery.jeditable.js"></script>
+<script src="js/plugins/dataTables/jquery.dataTables.js"></script>
+<script src="./angular-datatables/dist/angular-datatables.min.js"></script>
+<script src="./file-saver/filesaver.min.js"></script>
+<script src="js/plugins/dataTables/dataTables.bootstrap.js"></script>
+<script type="text/javascript" src="/js/plugins/toastr/toastr.js"></script>
+
+<script src="./highlight.js/lib/highlight.min.js"></script>
+
+<script src="./angular-highlightjs/angular-highlightjs.min.js"></script>
+
+<script>
+    hljs.initHighlightingOnLoad();
+</script>
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "onclick": null,
+        "showDuration": "400",
+        "hideDuration": "1000",
+        "timeOut": "7000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+</script>
+<script >
+    //var
+    var myApp =  angular.module('myModule',  ['datatables','hljs'])
+           .controller('AngularWayChangeDataCtrl', function ($scope,Data,tmpData, DTOptionsBuilder, DTColumnDefBuilder){
+                        var vm = this;
+                        vm.SafeItems=[];
+                        vm.dtOptions = DTOptionsBuilder.newOptions().withPaginationType('full_numbers');
+                        vm.dtColumnDefs = [
+                            DTColumnDefBuilder.newColumnDef(0)
+                        ];
+                        vm.lookItem = lookItem;
+                        vm.changeItem = changeItem;
+                        vm.ShowPaper = ShowPaper;
+                        vm.removeSafeItems = removeSafeItems;
+                        vm.addItemOne = addItemOne;
+                        vm.selectAll = selectAll;
+                        vm.lookSome = lookSome;
+                        $scope.isExportShow = false;
+                        $scope.testExport = function(){
+                            $scope.isExportShow = !$scope.isExportShow;
+                        };
+                        function lookSome (){
+                            $scope.$broadcast("Ctr1DataSome", 0,{});
+                            $('#reEditModal').modal({
+                                keyboard: true
+                            });
+                        }
+                        function ShowPaper(index){
+                            var msg = new Object();
+                            msg = vm.SafeItems[index];
+                            $scope.$broadcast("Ctr1ShowPaper", index,msg);
+                            $('#reEditModal2').modal({
+                                keyboard: true
+                            });
+                        }
+                        function changeItem (index){
+                          //  console.log(vm.SafeItems[index]);
+                            var msg = new Object();
+                            msg = vm.SafeItems[index];
+                          //  console.log(msg);
+                            $scope.$broadcast("Ctr1DataChange",index,msg);
+                            $('#reEditModal').modal({
+                                keyboard: true
+                            });
+                        }
+                        function selectAll (){
+                            $.ajax({
+                                method : 'get',
+                                url : '/glpaperselect',
+                                data:"",
+                                success:function(resp){
+                                    var data2 = resp.data;
+                               //     console.log(resp);
+                                    if(resp.code === "0" || resp.code === 0 ){
+                                        vm.SafeItems=[];
+                                        vm.SafeItems = data2;
+                                        $scope.$apply();
+                                    }
+                                    else
+                                    {
+                                        console.log("查询失败了");
+                                        toastr.error('查询失败了', '系统消息');
+                                    }
+                                },
+                                error:function(resp){
+                                    /* Act on the event */
+                                    console.log('aa');
+                                }
+                            });
+
+                        }
+
+                        function removeSafeItems(index) {
+                            var iddb = vm.SafeItems[index].id;
+                            var msg={id:iddb};
+                            $.ajax({
+                                method : 'post',
+                                url : '/gldelpaper',
+                                data:msg,
+                                success:function(resp){
+                                    if(resp.code === "0" || resp.code === 0 ){
+                                        vm.SafeItems.splice(index, 1);
+                                        toastr.success('删除成功', '系统消息');
+                                        $scope.$apply();
+                                    }
+                                    else
+                                    {
+                                        console.log("删除失败了");
+                                     //   console.log(resp);
+                                     //   console.log(vm.SafeItems[index].id);
+                                        toastr.error('删除失败了', '系统消息');
+                                    }
+                                },
+                                error:function(resp){
+                                    /* Act on the event */
+                                    console.log('aa');
+                                }
+                            });
+                            //  vm.SafeItems.splice(index, 1);
+                        }
+                        function lookItem(index) {
+                           //   console.log(vm.SafeItems[index]);
+                            var msg = new Object();
+                            msg = vm.SafeItems[index];
+                           // console.log(msg);
+                            $scope.$broadcast("Ctr1DataChange",index,msg);
+                            $('#reEditModal').modal({
+                                keyboard: true
+                            });
+                        }
+                        function addItemOne(){
+                            $scope.$broadcast("Ctr1DataAdd", 0,{});
+                            $('#reEditModal').modal({
+                                keyboard: true
+                            });
+                        }
+                        //     $scope.tmpData =tmpData;
+                        $scope.$on("pCtr1DataChange",
+                                function (event,Pos, msg) {
+                                //    console.log("msg,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,");
+                               //     console.log(Pos);
+                                    $scope.Pos = Pos;
+                                    vm.SafeItems[Pos] = msg;
+
+                                 //   console.log(msg);
+                                //    console.log(Pos);
+                                    $scope.$apply();
+                                });
+                        $scope.$on("pCtr1DataAdd",
+                                function (event,Pos, msg) {
+                                    $scope.Pos = msg.id;
+                                    vm.SafeItems.unshift(msg);
+                                    $scope.$apply();
+                                });
+                        $scope.$on("pCtr1DataSome",
+                                function (event,Pos, msg) {
+                                    vm.SafeItems = msg;
+                                    $scope.$apply();
+                                });
+                    })
+            .controller('pCtrl',function($scope,$http){
+                $scope.tmpDatatmp=[];
+                $scope.qItems =[];
+                $scope.formData={};
+           //     $scope.selectG = "";
+                $scope.tmexam = 30;
+                $scope.formData.state3  ="ddd";
+                $scope.GetMsg = function(){
+                    return  JSON.stringify($scope.qItems);
+                };
+                $scope.$on("Ctr1DataChange",
+                        function (event,Pos, msg) {
+                            $scope.Pos = Pos;
+                            $scope.bAdd = 0;
+                            $scope.tmpDatatmp = msg;
+                            $scope.tmpDataId = msg.id;
+                            console.log(msg);
+                            $scope.formData.state1 = msg.t1;
+                            $scope.formData.state2=msg.t2;
+                            $scope.formData.state3=msg.t3;
+                            $scope.dbcaption = msg.caption;
+                            $scope.dbremark = msg.remark;
+                            $scope.tmexam = msg.tmexam;
+
+
+                         //   $scope.selectG = msg.selectg;
+                         //   $scope.selectG = $scope.xType.tTypeG[2];
+
+                            for(var s in $scope.xType.tTypeG){
+                             //   console.log(s);
+                                if($scope.xType.tTypeG[s].key == msg.selectg){
+                                    $scope.selectG = $scope.xType.tTypeG[s];
+                                //    console.log("OK");
+                                }
+                            }
+                            console.log(msg.boilertype);
+
+                            for(var s in $scope.xtreeItem.items){
+                                console.log(s);
+                                if($scope.xtreeItem.items[s].caption == msg.boilertype){
+                                    $scope.selected = $scope.xtreeItem.items[s];
+
+                                }
+                               }
+
+                            $.ajax({
+                                method : 'post',
+                                url : '/glselectquestion',
+                                data:"",
+                                success:function(resp){
+                                    if(resp.code === "0" || resp.code === 0 ){
+                                        $scope.qItems=resp.data;
+                                        $scope.$apply();
+                                    }
+                                    else
+                                    {
+                                        console.log("删除失败了");
+                                        toastr.error('删除失败了', '系统消息');
+                                    }
+                                },
+                                error:function(resp){
+                                    console.log('aa');
+                                }
+                            });
+
+                         //   $scope.GetFromDb();
+                        });
+
+                $scope.$on("Ctr1DataAdd",
+                        function (event,Pos, msg) {
+                            $scope.Pos = Pos;
+                            $scope.bAdd = 1;
+                            $scope.tmpDatatmp = msg;
+
+                            $scope.formData.state1 = msg.t1;
+                            $scope.formData.state2=msg.t2;
+                            $scope.formData.state3=msg.t3;
+                            $scope.dbcaption = msg.caption;
+                            $scope.dbremark = msg.remark;
+                            $scope.tmexam = 30;
+
+                            $scope.selected = {};
+                            $.ajax({
+                                method : 'post',
+                                url : '/glselectquestion',
+                                data:"",
+                                success:function(resp){
+                                    if(resp.code === "0" || resp.code === 0 ){
+                                        $scope.qItems=resp.data;
+                                        $scope.$apply();
+                                    }
+                                    else
+                                    {
+                                        console.log("删除失败了");
+                                        toastr.error('删除失败了', '系统消息');
+                                    }
+                                },
+                                error:function(resp){
+                                    console.log('aa');
+                                }
+                            });
+                         //   $scope.GetFromDb();
+                        });
+                $scope.CheckNull = function(){
+                    console.log($scope.dbcaption);
+
+
+                    if($scope.dbcaption=="" || undefined==$scope.dbcaption){
+                        toastr.error('试卷名称不能为空', '系统消息');
+                        return;
+                    }
+
+                    if($scope.selectG.key==""|| undefined==$scope.selectG.key ){
+                        toastr.error('试卷分类不能为空', '系统消息');
+                        return;
+                    }
+
+
+
+                    if($scope.tmexam ==""  || undefined==$scope.tmexam){
+                        toastr.error('试卷时间不能为空', '系统消息');
+                        return;
+                    }
+                    if($scope.selected.caption=="" || undefined==$scope.selected.caption){
+                        toastr.error('锅炉类型不能为空', '系统消息');
+                        return;
+                    }
+
+                    if($scope.formData.state1=="" || undefined==$scope.formData.state1){
+                        toastr.error('认知选择不能为空', '系统消息');
+                        return;
+                    }
+
+                    if($scope.formData.state2=="" || undefined==$scope.formData.state2){
+                        toastr.error('运行选择不能为空', '系统消息');
+                        return;
+                    }
+
+                    if($scope.formData.state1=="" || undefined==$scope.formData.state3){
+                        toastr.error('事故选择不能为空', '系统消息');
+                        return;
+                    }
+                    console.log("一切OK");
+                };
+                $scope.btnSubmit = function(){
+                    // 提交
+                    //
+
+                    if($scope.dbcaption=="" || undefined==$scope.dbcaption){
+                        toastr.error('试卷名称不能为空', '系统消息');
+                        return;
+                    }
+
+                    if($scope.selectG.key==""|| undefined==$scope.selectG.key ){
+                        toastr.error('试卷分类不能为空', '系统消息');
+                        return;
+                    }
+
+
+
+                    if($scope.tmexam ==""  || undefined==$scope.tmexam){
+                        toastr.error('试卷时间不能为空', '系统消息');
+                        return;
+                    }
+                    if($scope.selected.caption=="" || undefined==$scope.selected.caption){
+                        toastr.error('锅炉类型不能为空', '系统消息');
+                        return;
+                    }
+
+                    if($scope.formData.state1=="" || undefined==$scope.formData.state1){
+                        toastr.error('认知选择不能为空', '系统消息');
+                        return;
+                    }
+
+                    if($scope.formData.state2=="" || undefined==$scope.formData.state2){
+                        toastr.error('运行选择不能为空', '系统消息');
+                        return;
+                    }
+
+                    if($scope.formData.state1=="" || undefined==$scope.formData.state3){
+                        toastr.error('事故选择不能为空', '系统消息');
+                        return;
+                    }
+
+                    if($scope.bAdd ==1){
+                        $.ajax({
+                            method : 'post',
+                            url : '/gladdpaper',
+                            data:{
+                                t1: $scope.formData.state1,
+                                t2: $scope.formData.state2,
+                                t3: $scope.formData.state3,
+                                dbcaption:$scope.dbcaption,
+                                dbremark:$scope.dbremark,
+                                selectg:$scope.selectG.key,
+                                boilertype:$scope.selected.caption,
+                                tmexam:$scope.tmexam
+                            },
+                            success:function(resp){
+
+                                if(resp.code === "0" || resp.code === 0 ){
+                                 //   $scope.qItems=resp.data;
+                                 //   $scope.$apply();
+                                    toastr.success('增加成功了', '系统消息');
+                                 //   console.log(resp.data);
+                                    $('#reEditModal').modal('hide');
+                                    //$scope.tmpDatatmp.caption
+                                    $scope.tmpDatatmp.id = resp.data.insertId;
+                                    $scope.tmpDatatmp.caption = $scope.dbcaption;
+                                    $scope.tmpDatatmp.remark = $scope.dbremark;
+                                    $scope.tmpDatatmp.t1 = $scope.formData.state1;
+                                    $scope.tmpDatatmp.t2 = $scope.formData.state2;
+                                    $scope.tmpDatatmp.t3 = $scope.formData.state3;
+                                    $scope.tmpDatatmp.selectg =  $scope.selectG.key;
+
+                                    $scope.tmpDatatmp.tmexam = $scope.tmexam;
+                                    $scope.tmpDatatmp.boilertype = $scope.selected.caption;
+
+                                 //   $scope.selected.caption = $scope.boilertype;
+
+
+                                    var myDate = new Date();
+                                    $scope.tmpDatatmp.time =  myDate.toLocaleString( );
+                                    $scope.$emit("pCtr1DataAdd", 0,$scope.tmpDatatmp);
+                                }
+                                else
+                                {
+
+                                    toastr.error('增加失败了', '系统消息');
+                                }
+                            },
+                            error:function(resp){
+                                console.log('aa');
+                            }
+                        });
+                    }
+                    else if($scope.bAdd == 0){
+                        // 修改
+                        $.ajax({
+                            method : 'post',
+                            url : '/glchangepaper',
+                            data:{
+                                t1: $scope.formData.state1,
+                                t2: $scope.formData.state2,
+                                t3: $scope.formData.state3,
+                                dbcaption:$scope.dbcaption,
+                                dbremark:$scope.dbremark,
+                                boilertype:$scope.selected.caption,
+                                id:$scope.tmpDataId
+                            },
+                            success:function(resp){
+
+                                if(resp.code === "0" || resp.code === 0 ){
+                                    //   $scope.qItems=resp.data;
+                                    //   $scope.$apply();
+                                    toastr.success('修改成功了', '系统消息');
+                                 //   console.log(resp.data);
+                                    $scope.tmpDatatmp.caption = $scope.dbcaption;
+                                    $scope.tmpDatatmp.remark = $scope.dbremark;
+                                    $scope.tmpDatatmp.t1 = $scope.formData.state1;
+                                    $scope.tmpDatatmp.t2 = $scope.formData.state2;
+                                    $scope.tmpDatatmp.t3 = $scope.formData.state3;
+                                 //   $scope.tmpDatatmp.boilertype = $scope.selected.caption;
+
+                                    $scope.tmpDatatmp.selectg =$scope.selectG.key;
+                                    $scope.tmpDatatmp.tmexam = $scope.tmexam;
+
+                                    $scope.tmpDatatmp.boilertype = $scope.selected.caption;
+                                    var myDate = new Date();
+                                    $scope.tmpDatatmp.time =  myDate.toLocaleString( );
+                                    $scope.$emit("pCtr1DataChange", $scope.Pos,$scope.tmpDatatmp);
+                                    $('#reEditModal').modal('hide');
+                                }
+                                else
+                                {
+
+                                    toastr.error('修改失败了', '系统消息');
+                                }
+                            },
+                            error:function(resp){
+                                console.log('aa');
+                            }
+                        });
+                    }
+                   // console.log( $scope.formData);
+
+                };
+                /// 题目的分类 ，难以成都
+                $scope.xType = {
+                    "tType": [
+                        {"key": "type_renzhi", "caption": "认知题目"},
+                        {"key": "type_yunxing", "caption": "运行题目"},
+                        {"key": "type_shigu", "caption": "事故题目"}
+                    ],
+                    "tTypeHard": [
+                        {"key": "hard_1", "caption": "★"},
+                        {"key": "hard_2", "caption": "★★"},
+                        {"key": "hard_3", "caption": "★★★"},
+                        {"key": "hard_4", "caption": "★★★★"},
+                        {"key": "hard_5", "caption": "★★★★★"}
+                    ],
+                    "tTypeG": [
+                        {"key": "G1", "caption": "G1类型"},
+                        {"key": "G2", "caption": "G2类型"},
+                        {"key": "G3", "caption": "G3类型"}
+                    ]
+                };
+                $scope.selectG = $scope.xType.tTypeG[0];
+                //$scope.xType.tTypeG
+                $scope.GetFromDb = function(){
+                    $http.post("/gettreelast").success(function(data,status,headers,config){
+                        $scope.dbtime = data.data[0].time;
+                        $scope.dbremark = data.data[0].remark;
+                        $scope.xtreeItem = JSON.parse(data.data[0].json);
+                        console.log($scope.xtreeItem);
+                    }).error(function(data,status,headers,config){
+                        alert("error");
+                    })
+                };
+                $scope.GetFromDb();
+           })
+            .controller('pCtrl2',function($scope,$http){
+                $scope.$on("Ctr1ShowPaper",
+                        function (event,Pos, msg) {
+                           console.log("Ctr1ShowPaper");
+                           console.log(msg);
+                            $scope.lookDetail(msg.id);
+                        });
+                $scope.lookDetail = function (paperid){
+                    // 查看做的试卷
+                    //   $scope.userInfoid = userid;
+                    $.ajax({
+                        method : 'get',
+                        url : '/getpaperbyid',
+                        data:{
+                            paperid:paperid
+                        },
+                        success:function(resp){
+                            if(resp.code === "0" || resp.code === 0 ){
+                                console.log(resp.data);
+                                //toastr.success('查询成功了', '系统消息');
+                                $scope.details = resp.data;
+                                $scope.$apply();
+
+                            }
+                            else
+                            {
+                                //	toastr.error('操作失败！', '系统消息');
+                            }
+                        },
+                        error:function(resp){
+                            console.log('aa');
+                        }
+                    });
+
+
+                };
+            });
+
+
+    myApp.factory('Data', function() {
+        return[];
+    });
+    myApp.factory('tmpData', function() {
+        return [];
+    });
+</script>
+</body>
+</html>

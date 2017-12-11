@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>题库维护</title>
+
+    <link href="css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <!-- Data Tables -->
+    <link href="css/animate.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./angular-datatables/dist/css/angular-datatables.css">
+    <link href="css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+    <link href="css/style.min862f.css?v=4.1.0" rel="stylesheet">
+    <link href="css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="./highlight.js/styles/dark.css">
+    <style type="text/css">
+        .td{border:solid #add9c0; border-width:0px 1px 1px 0px; padding:10px 0px;}
+        .table{border:solid #add9c0; border-width:1px 0px 0px 1px;}
+    </style>
+    <style type="text/css">
+             label {
+            padding: 5px 10px;
+                    border: 1px solid #fff;
+               }
+            .error {
+                    border-color: #f00;
+                   }
+            </style>
+    <style type="text/css">
+        .lightblue{background-color: lightblue;}
+        .red{color: red;}
+        .green{color: green;}
+    </style>
+</head>
+<body>
+<div>
+    <div ng-app ="myModule" >
+
+
+        <div ng-controller="AngularWayChangeDataCtrl as showCase" >
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-title">
+                            <h5>题库列表</h5>
+                        </div>
+
+                        <div class="ibox-content">
+                            <div>
+                                <button  type="button" class="btn btn-primary" ng-click="showCase.addItemOne()">
+                                    增加
+                                </button>
+                                <button ng-show="false"  type="button" class="btn btn-primary" ng-click="showCase.lookSome()">
+                                    查询
+                                </button>
+                                <button  type="button" class="btn btn-primary" ng-click="showCase.selectAll()">
+                                    查看全部
+                                </button>
+                                <button ng-show="false" type="button" class="btn btn-primary" ng-click="testExport()">
+                                    导入
+                                </button>
+                            </div>
+
+                            <div >
+
+                                <form class="form-inline" ng-submit="showCase.addPerson()">
+                                    <table border="1" datatable="ng" dt-options="showCase.dtOptions" dt-column-defs="showCase.dtColumnDefs" class="row-border hover">
+                                        <thead>
+                                        <tr>
+                                            <th align="center">索引</th>
+                                            <th align="center">锅炉类型</th>
+                                            <th align="center">操作类型</th>
+                                            <th align="center">题目名称</th>
+                                            <th align="center">难度</th>
+                                            <th align="center">修改时间</th>
+                                            <th align="center">备注</th>
+
+                                            <th align="center">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr ng-repeat="item in showCase.SafeItems">
+                                            <td align="center" width="30">{{ $index +1}}</td>
+                                            <td align="center" width="150">{{ item.boilertype }}</td>
+                                            <td align="center" width="100">{{ item.opertype }}</td>
+                                            <td align="center" width="380">{{ item.caption }}</td>
+                                            <td align="center" width="50">{{ item.hard }}</td>
+                                            <td align="center" width="100">{{ item.time | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                                            <td align="center" width="100">{{ item.remark }}</td>
+
+                                            <td>
+                                                <span  ng-click="showCase.changeItem($index)" class="btn btn-success btn-xs">修改</span>
+                                                <span  ng-click="showCase.removeSafeItems($index)" class="btn btn-danger btn-xs">删除</span>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </form>
+
+
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div  class="modal fade" id="reEditModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog" style="width: 1000px;  background-color: blue" ng-style="style" >
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">关闭</span></button>
+                            <h4 class="modal-title " id="myModalLabel">弹框</h4>
+                        </div>
+
+                        <div class="modal-body" ng-controller="pCtrl">
+                            <form role="form" >
+                                <div class="ibox float-e-margins">
+                                    <div  class="wrapper wrapper-content animated fadeInRight">
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="ibox float-e-margins">
+                                                    <div>
+                                                        <h1>题目名称：</h1>
+                                                        <textarea rows="1" cols="80" ng-model="dbcaption" placeholder="题目名称">{{dbcaption}}</textarea>
+                                                        <h1>备注：</h1>
+                                                        <textarea rows="1" cols="80" ng-model="dbremarkTmp" placeholder="备注">{{dbremarkTmp}}</textarea>
+                                                        <h1>题目分类：</h1>
+                                                        <select ng-model="tType" ng-options="s.caption + s.key  for s in xType.tType" >
+                                                            <option value="">--请选择--</option>
+                                                        </select>
+
+                                                        <h1>难度等级：</h1>
+                                                        <select ng-model="tTypeHard" ng-options="s.caption + s.key  for s in xType.tTypeHard"  >
+                                                            <option value="">--请选择--</option>
+                                                        </select>
+
+                                                        <h1>选择 锅炉类型</h1>
+                                                        <label ng-show="xtreeItem.items.length">
+                                                            锅炉类型：
+                                                            <select ng-model="selected" ng-options="s.caption + s.key  for s in xtreeItem.items" ng-change="sc1()">
+                                                                <option value="">--请选择--</option>
+                                                            </select>
+
+                                                        </label>
+                                                        <label ng-show="selected.items.length" >
+                                                            操作类型：
+                                                            <select ng-model="selected2" ng-options="sh.caption + sh.key for sh in selected.items" ng-change="sc2()" >
+                                                                <option value="">--请选择--</option>
+                                                            </select>
+                                                        </label>
+
+
+
+
+                                                        <div>
+
+
+                                                        </div>
+
+
+                                                    </div>
+                                                    <div ng-show="selected2.items.length">
+                                                        <h1>初始化：</h1>
+                                                        <div>
+                                                            <button ng-click="qinbtnadd()" class="btn btn-primary btn-sm" >增加</button>
+                                                            <table border="1">
+                                                                <tr>
+                                                                    <th>序号</th>
+                                                                    <th>内容</th>
+                                                                    <th>操作</th>
+                                                                </tr>
+                                                                <tr ng-repeat="u in questionInit">
+                                                                    <td>{{$index}}</td>
+                                                                    <td>
+                                                                        <div>
+
+                                                                            {{xclickinit(selected2,u.type_operation,u.key,u.value)}}
+                                                                            <label ng-show="selected2.items.length" >
+                                                                                操作点类型：
+                                                                                <select ng-model="selected3in"  ng-options=" k.caption + k.key for k in selected2.items" ng-change="sc3in()" >
+                                                                                    <option value="" >--请选择--</option>
+                                                                                </select>
+
+                                                                            </label>
+                                                                            <label ng-show="selected3in.items.length" >
+                                                                                操作点：
+                                                                                <select ng-model="selected4in"   ng-options="z.caption + z.key for z in selected3in.items" ng-change="sc4in()" >
+                                                                                    <option value="">--请选择--</option>
+                                                                                </select>
+
+                                                                            </label>
+                                                                            <label ng-show="selected4in.items.length" >
+                                                                                值：
+                                                                                <select ng-model="selected5in" ng-options="p.caption + p.value for p in selected4in.items" ng-change="sc5in()" >
+                                                                                    <option value="">--请选择--</option>
+                                                                                </select>
+                                                                            </label>
+
+                                                                            <div ng-show="selected5in">
+                                                                                <div style="background-color:rgba(168, 246, 100, 0.35);">
+                                                                                    <strong ng-class="{true: 'green', false: 'red'}[selected4in.key=='']">改完</strong>
+                                                                                    <strong ng-class="{true: 'green', false: 'red'}[selected5in.value==1]">数据</strong>
+                                                                                    <strong >
+                                                                                        {"type_operation":"{{selected3in.key}}","key":"{{selected4in.key}}","value":"{{selected5in.value}}"}
+
+                                                                                    </strong>
+
+                                                                                    {{questionInittmp[$index].type_operation=selected3in.key}}
+                                                                                    {{questionInittmp[$index].key=selected4in.key}}
+                                                                                    {{questionInittmp[$index].value=selected5in.value}}
+
+
+                                                                                </div>
+
+                                                                            </div>
+
+                                                                        </div>
+
+
+                                                                    </td>
+                                                                    <td><button ng-click="qinbtndel($index)">删除</button></td>
+
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+
+                                                    </div>
+                                                    <div ng-show="selected2.items.length">
+                                                        <h1>操作：</h1>
+                                                        <div >
+                                                            <button ng-click="qbtnAddPoint()" class="btn btn-primary btn-sm">在开始位置增加</button>
+                                                            <button ng-click="qbtnAddPointTail()" class="btn btn-primary btn-sm">在末尾位置增加</button>
+                                                        </div>
+                                                        <div>
+                                                            <div >
+                                                                <table border="1">
+                                                                    <tr>
+                                                                        <th>序号</th>
+                                                                        <th>优先级</th>
+                                                                        <th>内容</th>
+                                                                        <th>操作</th>
+                                                                    </tr>
+                                                                    <tr ng-repeat="x in questionItems.msg_correct_step">
+
+                                                                        <td>{{$index+1}}</td>
+                                                                        <td><input type="number" min="1" style="width:45px;background-color:transparent" ng-init="x.blevel" ng-model="x.blevel" /> </td>
+                                                                        <td>
+                                                                            <button ng-click="qbtnAddOper(x)" class="btn btn-primary btn-sm">在开始位置增加</button>
+                                                                            <button ng-click="qbtnAddOperTail(x)" class="btn btn-primary btn-sm">在末尾位置增加</button>
+                                                                            {{questionItemsBufTmp[$index].blevel = x.blevel}}
+                                                                            <table border="1">
+                                                                                <tr>
+                                                                                    <th>序号</th>
+                                                                                    <th>优先级</th>
+                                                                                    <th>内容</th>
+                                                                                    <th>操作</th>
+                                                                                </tr>
+                                                                                <tr ng-repeat="m in x.step">
+
+                                                                                    <td>{{$index}}</td>
+                                                                                    <td><input type="number" min="1" style="width:45px;background-color:transparent"  ng-model="m.level" /></td>
+                                                                                    <td>
+                                                                                        <table border="1">
+                                                                                            <tr>
+                                                                                                <th>操作点</th>
+                                                                                                <th>特效</th>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td>
+                                                                                                    <div>
+                                                                                                        {{xclick(selected2,m.type_operation,m.key,m.value)}}
+                                                                                                        <div> <label ng-show="selected2.items.length" >
+                                                                                                            操作点类型：
+                                                                                                            <select ng-model="selected3"  ng-options=" k.caption + k.key for k in selected2.items" ng-change="sc3()" >
+                                                                                                                <option value="" >--请选择--</option>
+                                                                                                            </select>
+
+                                                                                                        </label></div>
+                                                                                                        <div><label ng-show="selected3.items.length" >
+                                                                                                            操作点：
+                                                                                                            <select ng-model="selected4"   ng-options="z.caption + z.key for z in selected3.items" ng-change="sc4()" >
+                                                                                                                <option value="">--请选择--</option>
+                                                                                                            </select>
+
+                                                                                                        </label></div>
+                                                                                                        <div> <label ng-show="selected4.items.length" >
+                                                                                                            值：
+                                                                                                            <select ng-model="selected5" ng-options="p.caption + p.value for p in selected4.items" ng-change="sc5()" >
+                                                                                                                <option value="">--请选择--</option>
+                                                                                                            </select>
+                                                                                                        </label></div>
+
+
+
+
+                                                                                                        <div ng-show="false">
+
+                                                                                                            <div style="background-color:rgba(168, 246, 100, 0.35);">
+                                                                                                                <strong ng-class="{true: 'green', false: 'red'}[selected4.key=='']">改完</strong>
+                                                                                                                <strong ng-class="{true: 'green', false: 'red'}[selected5.value==1]">数据</strong>
+                                                                                                                <strong >
+                                                                                                                    {"level":"{{m.level}}","type_operation":"{{selected3.key}}","key":"{{selected4.key}}","value":"{{selected5.value}}"}
+
+                                                                                                                </strong>
+
+                                                                                                                {{questionItemsBufTmp[$parent.$index].step[$index].level = m.level  }}
+                                                                                                                {{questionItemsBufTmp[$parent.$index].step[$index].type_operation = selected3.key}}
+                                                                                                                {{questionItemsBufTmp[$parent.$index].step[$index].key = selected4.key}}
+                                                                                                                {{questionItemsBufTmp[$parent.$index].step[$index].value = selected5.value}}
+
+
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
+
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <div>
+                                                                                                        <button ng-click="addTx(m)">增加特效</button>
+                                                                                                        <table border="1">
+                                                                                                            <tr>
+                                                                                                                <th>特效</th>
+                                                                                                                <th>操作</th>
+                                                                                                            </tr>
+                                                                                                            <tr ng-repeat="t in m.texiao">
+                                                                                                                <td>
+                                                                                                                    <div>
+                                                                                                                        <label ng-show="selected2.items.length" >
+                                                                                                                            操作点类型：
+                                                                                                                            <select ng-model="txselected3"  ng-options=" k.caption + k.key for k in selected2.items"  >
+                                                                                                                                <option value="" >--请选择--</option>
+                                                                                                                            </select>
+
+                                                                                                                        </label>
+                                                                                                                    </div>
+                                                                                                                    <div>
+                                                                                                                        <label ng-show="txselected3.items.length" >
+                                                                                                                            操作点：
+                                                                                                                            <select ng-model="txselected4"   ng-options="z.caption + z.key for z in txselected3.items"  >
+                                                                                                                                <option value="">--请选择--</option>
+                                                                                                                            </select>
+
+                                                                                                                        </label>
+                                                                                                                    </div>
+
+                                                                                                                    <div>
+                                                                                                                        <label ng-show="txselected4.items.length" >
+                                                                                                                            值：
+                                                                                                                            <select ng-model="txselected5" ng-options="p.caption + p.value for p in txselected4.items"  >
+                                                                                                                                <option value="">--请选择--</option>
+                                                                                                                            </select>
+                                                                                                                        </label>
+                                                                                                                    </div>
+
+                                                                                                                  
+
+
+                                                                                                                </td>
+                                                                                                                <td>
+                                                                                                                    <button>删除</button>
+                                                                                                                </td>
+                                                                                                            </tr>
+                                                                                                        </table>
+
+                                                                                                    </div>
+
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        </table>
+
+
+                                                                                    </td>
+
+                                                                                    <td><button ng-click="qbtnDelOper(x,$index,$parent.$index)">删除</button></td>
+                                                                                </tr>
+                                                                            </table>
+                                                                        </td>
+                                                                        <td><button ng-click="qbtndelPoint($index)">删除</button></td>
+                                                                    </tr>
+                                                                </table>
+                                                              </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h1>初始化</h1>
+                                        <div hljs
+                                             hljs-source="GetInit()">
+
+                                        </div>
+
+                                        <h1>步骤</h1>
+
+                                        <div hljs
+                                             hljs-source="GetSteps()">
+
+                                        </div>
+
+                                        <h1>完整json</h1>
+                                        <div hljs
+                                             hljs-source="GetAllJsons()">
+
+                                        </div>
+                                        <h1>questionItems.msg_correct_step</h1>
+                                        <div hljs
+                                             hljs-source="GetAllJsons2()">
+
+                                        </div>
+
+
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default"
+                                                data-dismiss="modal">关闭
+                                        </button>
+                                        <button id="btnModify" type="button" ng-click="btnSubmit()" class="btn btn-primary">
+                                            提交
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
+</div>
+
+<script src="js/jquery.min.js?v=2.1.4"></script>
+<script src="js/bootstrap.min.js?v=3.3.6"></script>
+<!-- angularjs -->
+<script type="text/javascript" src="/angularjs/angular.js"></script>
+<script src="js/plugins/jeditable/jquery.jeditable.js"></script>
+<script src="js/plugins/dataTables/jquery.dataTables.js"></script>
+<script src="./angular-datatables/dist/angular-datatables.min.js"></script>
+<script src="./file-saver/filesaver.min.js"></script>
+<script src="js/plugins/dataTables/dataTables.bootstrap.js"></script>
+<script type="text/javascript" src="/js/plugins/toastr/toastr.js"></script>
+
+<script src="./highlight.js/lib/highlight.min.js"></script>
+
+<script src="./angular-highlightjs/angular-highlightjs.min.js"></script>
+
+<script>
+    hljs.initHighlightingOnLoad();
+</script>
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "onclick": null,
+        "showDuration": "400",
+        "hideDuration": "1000",
+        "timeOut": "7000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+</script>
+<script >
+    //var
+    var myApp =  angular.module('myModule',  ['datatables','hljs'])
+           .controller('AngularWayChangeDataCtrl', function ($scope,Data,tmpData, DTOptionsBuilder, DTColumnDefBuilder){
+                        var vm = this;
+                        vm.SafeItems=[];
+                        vm.exportStudentMsg = [];
+                        vm.dtOptions = DTOptionsBuilder.newOptions().withPaginationType('full_numbers');
+                        vm.dtColumnDefs = [
+                            DTColumnDefBuilder.newColumnDef(0)
+                        ];
+                        vm.lookItem = lookItem;
+                        vm.removeSafeItems = removeSafeItems;
+                        vm.addItemOne = addItemOne;
+                        vm.selectAll = selectAll;
+                        vm.lookSome = lookSome;
+                        vm.changeItem = changeItem;
+                        $scope.isExportShow = false;
+                        $scope.testExport = function(){
+                            $scope.isExportShow = !$scope.isExportShow;
+                        };
+                        function lookSome (){
+                            $scope.$broadcast("Ctr1DataSome", 0,{});
+
+                            $('#reEditModal').modal({
+                                keyboard: true
+                            });
+                        }
+                        function selectAll (){
+                            $.ajax({
+                                method : 'get',
+                                url : '/glquestion',
+                                data:"",
+                                success:function(resp){
+                                    var data2 = resp.data;
+
+                                    if(resp.code === "0" || resp.code === 0 ){
+                                        vm.SafeItems=[];
+                                      //    console.log(data2);
+                                        vm.SafeItems = data2;
+                                        $scope.$apply();
+                                    }
+                                    else
+                                    {
+                                        console.log("查询失败了");
+                                        toastr.error('查询失败了', '系统消息');
+                                    }
+                                },
+                                error:function(resp){
+                                    /* Act on the event */
+                                    console.log('aa');
+                                }
+                            });
+                        }
+
+                        function removeSafeItems(index) {
+                            var iddb = vm.SafeItems[index].id;
+                            var msg={id:iddb};
+                            $.ajax({
+                                method : 'post',
+                                url : '/gldelquestion',
+                                data:msg,
+                                success:function(resp){
+                                    if(resp.code === "0" || resp.code === 0 ){
+                                        vm.SafeItems.splice(index, 1);
+                                        toastr.success('删除成功', '系统消息');
+                                        $scope.$apply();
+                                    }
+                                    else
+                                    {
+                                        console.log("删除失败了");
+                                     //   console.log(resp);
+                                     //   console.log(vm.SafeItems[index].id);
+                                        toastr.error('删除失败了', '系统消息');
+                                    }
+                                },
+                                error:function(resp){
+                                    /* Act on the event */
+                                    console.log('aa');
+                                }
+                            });
+                            //  vm.SafeItems.splice(index, 1);
+                        }
+                        function lookItem(index) {
+                             // console.log(vm.SafeItems[index]);
+                            var msg = new Object();
+                            msg = vm.SafeItems[index];
+                         //   console.log(msg);
+                            $scope.$broadcast("Ctr1DataAdd",index,msg);
+                            $('#reEditModal').modal({
+                                keyboard: true
+                            });
+                        }
+                        function changeItem(index) {
+                          //  console.log(vm.SafeItems[index]);
+                            var msg = new Object();
+                            msg = vm.SafeItems[index];
+                          //  console.log(msg);
+                            $scope.$broadcast("Ctr1DataChange",index,msg);
+                            $('#reEditModal').modal({
+                                keyboard: true
+                            });
+                        }
+                        function addItemOne(){
+                            $scope.$broadcast("Ctr1DataAdd", 0,{});
+                            $('#reEditModal').modal({
+                                keyboard: true
+                            });
+                        }
+                        //     $scope.tmpData =tmpData;
+                        $scope.$on("pCtr1DataChange",
+                                function (event,Pos, msg) {
+                                    //   console.log("pCtr1DataChange");
+                                    $scope.Pos = Pos;
+                                    vm.SafeItems[Pos] = msg;
+                                    //  console.log(vm.SafeItems[Pos]);
+                                   // $scope.$apply();
+                                });
+                        $scope.$on("pCtr1DataAdd",
+                                function (event,Pos, msg) {
+                                    $scope.Pos = msg.id;
+                                    vm.SafeItems.unshift(msg);
+                                  //  $scope.$apply();
+                                });
+                        $scope.$on("pCtr1DataSome",
+                                function (event,Pos, msg) {
+                                    vm.SafeItems = msg;
+                                    $scope.$apply();
+                                });
+                    })
+            .controller('pCtrl',function($scope,$http){
+                $scope.pos=["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","AA","AB","AC"];
+                ///////
+                $scope.xtreeItem = {};
+                $scope.tmpDatatmp =[];
+                $scope.tmpDatatmp.title = "";
+                $scope.tmpDatatmp.select = [];
+                $scope.delItem = function(pos){
+                    $scope.tmpDatatmp.select.splice(pos,1);
+                };
+                $scope.addItems = function(){
+                    $scope.tmpDatatmp.select.push({uck:false,ck:false,v:"新增选项"});
+                };
+                //////
+                $scope.tmpData =[];
+                $scope.$on("Ctr1DataSome",
+                        function (event,Pos, msg) {
+                            $scope.Pos = Pos;
+                            $scope.bAdd = 2;
+                            $scope.tmpDatatmp = msg;
+                        });
+                $scope.$on("Ctr1DataChange",
+                        function (event,Pos, msg) {
+                            $scope.Pos = Pos;
+                            $scope.bAdd = 0;
+                            $scope.tmpDatatmp = msg;
+                            $scope.tmpDataId = msg.id;
+                            $http.post("/gettreelast").success(function(data,status,headers,config){
+                                $scope.dbtime = data.data[0].time;
+                                $scope.dbremark = data.data[0].remark;
+
+                                $scope.xtreeItem = JSON.parse(data.data[0].json);
+
+
+                                $scope.questionInit.splice(0, $scope.questionInit.length);
+                                $scope.questionInittmp.splice(0,$scope.questionInittmp.length);
+
+                                $scope.questionItems.msg_correct_step.splice(0,$scope.questionItems.msg_correct_step.length);
+                                $scope.questionItemsBufTmp.splice(0, $scope.questionItemsBufTmp.length);
+                                $scope.dbcaption = msg.caption;
+                            //    console.log(msg);
+
+                                $.ajax({
+                                    method : 'post',
+                                    url : '/getquestionjson',
+                                    data:{id:msg.id},
+                                    success:function(resp){
+                                        var data2 = resp.data;
+                                        if(resp.code === "0" || resp.code === 0 ){
+                                        //    console.log("getquestionjson");
+                                       //     console.log(data2[0].json);
+                                            var json = JSON.parse(data2[0].json);
+                                        //    console.log(json);
+
+
+                                            $scope.dbcaption = json.caption;
+                                            for(var x in $scope.xType.tType ){
+                                                if($scope.xType.tType [x].key == json.opertype.key){
+                                                    $scope.tType = $scope.xType.tType[x];
+                                                }
+                                            }
+                                            for(var x in $scope.xType.tTypeHard ){
+                                                if($scope.xType.tTypeHard [x].key == json.hard.key){
+                                                    $scope.tTypeHard = $scope.xType.tTypeHard[x];
+                                                }
+                                            }
+                                            $scope.dbremark = json.remark;
+                                            $scope.dbremarkTmp = json.remark;
+                                            for(var x in $scope.xtreeItem.items){
+                                                if($scope.xtreeItem.items[x].key == json.boilertype.key){
+
+                                                    $scope.selected = $scope.xtreeItem.items[x];
+                                                    $scope.selectedMs = $scope.xtreeItem.items[x];
+
+                                                    for(var k in $scope.xtreeItem.items[x].items){
+
+                                                        if($scope.xtreeItem.items[x].items[k].key == json.boileropertype.key){
+                                                            $scope.selected2 = $scope.xtreeItem.items[x].items[k];
+                                                            $scope.selected2Ms = $scope.xtreeItem.items[x].items[k];
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            $scope.questionInit = json.question.init;
+                                            $scope.questionItems.msg_correct_step = json.question.step;
+                                            $scope.questionItemsBufTmp = json.question.step;
+                                            console.log($scope.questionItems.msg_correct_step);
+                                            $scope.$apply();
+
+
+                                        }
+
+                                    },
+                                    error:function(resp){
+                                        /* Act on the event */
+                                        console.log('aa');
+                                    }
+                                });
+
+
+
+
+
+
+                            }).error(function(data,status,headers,config){
+                                alert("error");
+                            });
+
+
+
+
+                         //   console.log(json.remark,$scope.dbremark);
+                            /// 这个地方 好难啊
+                        });
+                        $scope.testClick = function(){
+
+                        };
+                $scope.$on("Ctr1DataAdd",
+                        function (event,Pos, msg) {
+                          //  console.log("Ctr1DataAdd ....ssssssss....");
+                            $scope.Pos = Pos;
+                            $scope.bAdd = 1;
+                            $scope.tmpDatatmp = msg;
+                            $scope.sc1();
+
+                            $scope.questionInit.splice(0, $scope.questionInit.length);
+                            $scope.questionInittmp.splice(0,$scope.questionInittmp.length);
+
+                            $scope.questionItems.msg_correct_step.splice(0,$scope.questionItems.msg_correct_step.length);
+                            $scope.questionItemsBufTmp.splice(0, $scope.questionItemsBufTmp.length);
+
+                           $http.post("/gettreelast").success(function(data,status,headers,config){
+                             $scope.dbtime = data.data[0].time;
+                             $scope.dbremark = data.data[0].remark;
+                             $scope.xtreeItem = JSON.parse(data.data[0].json);
+                          //  console.log($scope.xtreeItem);
+                          //     console.log( $scope.questionInittmp.length);
+                               $scope.dbremarkTmp = "";
+                               $scope.dbcaption = "";
+                               $scope.questionInit.splice(0, $scope.questionInit.length);
+                               $scope.questionInittmp.splice(0,$scope.questionInittmp.length);
+
+                               $scope.questionItems.msg_correct_step.splice(0,$scope.questionItems.msg_correct_step.length);
+                               $scope.questionItemsBufTmp.splice(0, $scope.questionItemsBufTmp.length);
+
+                            //   console.log( $scope.questionInittmp);
+                           //    console.log( $scope.questionInittmp.length);
+                               $scope.questionItemsBufTmp =[
+
+                               ];
+
+                           //  console.log("Ctr1DataAdd ........");
+                           //  console.log( $scope.questionInittmp);
+                           //  console.log( $scope.questionItemsBufTmp);
+                         }).error(function(data,status,headers,config){
+                             alert("error");
+                         })
+                        });
+                        $scope.GetFromDb = function(){
+
+                        };
+                        $scope.InitNewAdd = function(){
+                            $scope.questionInittmp=[];
+                            $scope.questionItemsBufTmp =[
+
+                            ];
+
+                        };
+                ///////////////
+                $scope.btnSubmit = function(){
+                    if($scope.bAdd == 1){
+                        $scope.addToDb();
+                    }
+                    else if($scope.bAdd == 0){
+                        $scope.updateToDb();
+                    }
+
+
+                    return;
+                    var data = $scope.tmpDatatmp;
+                    var msg={};
+                    msg = data;
+                    var tmpUrl = "";
+                    var tmpMsg = "";
+                    if($scope.bAdd == 1){
+                        tmpUrl = '/studentAdd';
+                        tmpMsg = "增加";
+                    }
+                    else if($scope.bAdd==0){
+                        tmpUrl = '/studentModify';
+                        msg.id = $scope.tmpDatatmp.id;
+                        tmpMsg = "修改";
+                    }
+                    else if($scope.bAdd==2){
+                        tmpUrl = '/studentqueryAllBySome';
+                        tmpMsg = "查询";
+                    }
+                    //   console.log(msg);
+                    $.ajax({
+                        method : 'post',
+                        url : tmpUrl,
+                        data:msg,
+                        success:function(resp){
+                            var data2 = resp.data;
+                            var tmpMsg="";
+                            if(resp.code === "0" || resp.code === 0 ){
+                                if($scope.bAdd == 1){
+                                    // 增加
+
+                                    $scope.tmpDatatmp.id = data2;
+                                    $scope.$emit("pCtr1DataAdd", 0,$scope.tmpDatatmp);
+                                    toastr.success('增加成功', '系统消息');
+                                }
+                                else if($scope.bAdd == 0){
+                                    // 修改
+                                    //   tmpMsg = "修改";
+                                    $scope.$emit("pCtr1DataChange", $scope.Pos,$scope.tmpDatatmp);
+                                    toastr.success('修改成功', '系统消息');
+                                }
+                                else if($scope.bAdd == 2){
+                                    // 条件查询
+                                    //  tmpMsg = "条件查询";
+                                    // console.log("条件查询");
+                                    //  console.log(data2);
+                                    $scope.$emit("pCtr1DataSome", 0,data2);
+                                    toastr.success('查询成功', '系统消息');
+                                }
+                                $('#reEditModal').modal('hide');
+                            }
+                            else
+                            {
+                                var tmpMsg = "";
+                                if($scope.bAdd == 1){
+                                    tmpMsg = "增加失败，请重试！";
+                                }
+                                else if($scope.bAdd==0){
+                                    tmpMsg = "修改失败，请重试！";
+                                }
+                                else if($scope.bAdd==2){
+                                    tmpMsg = "没有找到您要查找的数据";
+                                }
+                                toastr.error(tmpMsg , '系统消息');
+                            }
+                        },
+                        error:function(resp){
+                            /* Act on the event */
+                            console.log('aa');
+                        }
+                    });
+
+                };
+                $scope.change = function () {
+                    //    console.log("$scope.change");
+                    $scope.$emit("pCtr1DataChange", $scope.Pos,$scope.tmpDatatmp);
+                };
+                        $scope. dbcaption = ""; //标题
+                        $scope.sc1 = function(){
+                          //  console.log("sc1");
+                            $scope.selected2 = "";
+                            $scope.selected3 = "";
+                            $scope.selected4 = "";
+                            $scope.selected5 = "";
+
+                            $scope.selected3in = "";
+                            $scope.selected4in = "";
+                            $scope.selected5in = "";
+
+                        };
+                        $scope.sc2 = function(){
+
+                            $scope.selected3 = "";
+                            $scope.selected4 = "";
+                            $scope.selected5 = "";
+
+                            $scope.selected3in = "";
+                            $scope.selected4in = "";
+                            $scope.selected5in = "";
+                        };
+                        $scope.sc3 = function(){
+                            $scope.selected4 = "";
+                            $scope.selected5 = "";
+                        };
+                        $scope.sc4 = function(){
+                            $scope.selected5 = "";
+                        };
+
+                        $scope.sc5 = function(){
+
+                        };
+
+
+                        $scope.sc3in = function(){
+                            $scope.selected4in = "";
+                            $scope.selected5in = "";
+                        };
+                        $scope.sc4in = function(){
+                            $scope.selected5in = "";
+                        };
+
+                        $scope.sc5in = function(){
+
+                        };
+
+
+                        $scope.sctest = function(){
+                         // console.log("sctest");
+                        };
+
+                        $scope.xxfilter = function(item,key1,key2,type,value){
+                          //  console.log("item log");
+                          //  console.log(item);
+                         //   console.log(key1);
+                          //  console.log(key2);
+                            if(item && key1 && key2)
+                            {
+                                if(type == 1)
+                                {
+                                    for(var i= 0; i<item.length;i++)
+                                    {
+                                        if(item[i].key == key1){
+                                            //  console.log(item[i].items);
+                                            return item[i].items;
+                                        }
+                                    }
+                                    return item[0].items;
+                                }
+                                else if(type == 2)
+                                {
+                                    for(var i= 0; i<item.length;i++)
+                                    {
+                                        if(item[i].key == key1){
+
+                                            for(var m = 0 ; m<item[i].items.length;m++)
+                                            {
+
+                                                if(item[i].items[m].key == key2)
+                                                {
+                                                    //  console.log(item[i].items[m]);
+                                                    return item[i].items[m].items;
+                                                }
+
+                                            }
+                                            return  item[i].items[0].items;
+
+                                        }
+                                    }
+                                    return item[0].items[0].items;
+                                }
+                            }
+                        };
+
+                        $scope.setCheck = function(items1,items2,items3,key1,key2,value){
+                          //  console.log(items1);
+                            if(items1 && items2 && items3)
+                            {
+
+
+                            }
+                        };
+                        $scope.xclick = function(items,x,y,z){
+                         //   console.log("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj");
+                         // console.log(items);
+                         // console.log(x);
+                         // console.log(y);
+                         // console.log(z);
+                            if(!items)
+                            return;
+
+                            for(var i = 0 ;i <items.items.length;i++)
+                            {
+                               // console.log(items.items[i]);
+                                if(items.items[i].key == x)
+                                {
+                                    $scope.selected3 = items.items[i];
+
+                                    for(var j = 0; j< items.items[i].items.length;j++)
+                                    {
+                                        if(items.items[i].items[j].key == y)
+                                        {
+                                          //  console.log(items.items[i].items[j]);
+                                            $scope.selected4 =items.items[i].items[j];
+                                            for(var k = 0; k< items.items[i].items[j].items.length;k++)
+                                            {
+                                                if(items.items[i].items[j].items[k].value == z)
+                                                {
+                                                    $scope.selected5 = items.items[i].items[j].items[k];
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if(!x)
+                            $scope.selected3 = "";
+                            if(!y)
+                            $scope.selected4 = "";
+                            if(!z)
+                            $scope.selected5 = "";
+                          //  console.log("");
+                        };
+                        $scope.questionItems={
+                            "msg_correct_step":[
+
+                            ]
+                        };
+                        $scope.questionItemsBufTmp =[
+
+                        ];
+                        $scope.questionItems2 = {
+                            "msg_correct_step":[
+                                        {"blevel":1,"step":[
+                                                    {"level":1,"type_operation":"valve","key":"v_fkf","value":"0","Score":4},
+                                                    {"level":2,"type_operation":"valve","key":"v_fkf","value":"0","Score":4},
+                                                    {"level":3,"type_operation":"valve","key":"v_fkf","value":"0","Score":4}
+                                               ]
+                                        },
+                                        {"blevel":2,"step":[
+                                                    {"level":1,"type_operation":"valve"},
+                                                    {"level":2,"type_operation":"valve","key":"v_fkf"},
+                                                    {"level":3,"type_operation":"valve","key":"v_fkf","value":"0","Score":4}
+                                                ]
+                                        }
+                                  ]};
+                        $scope.stmp ={"msg_correct_step":[]};
+                        $scope.GetSteps = function(){
+                            $scope.stmp.msg_correct_step = $scope.questionItemsBufTmp;
+                          //  console.log($scope.stmp);
+
+                           // JSON.stringify( $scope.questionInittmp, null, 2);
+                            return JSON.stringify( $scope.stmp, null, 2);
+                        };
+                        $scope.qbtnAddPoint = function(){
+                            $scope.questionItems.msg_correct_step.unshift( {"blevel":1,"step":[
+                                {"level":1,"type_operation":"","texiao":[]}
+                               ]
+                            });
+
+                            $scope.questionItemsBufTmp.unshift({"blevel":1,"step":[
+                                {"level":1,"type_operation":"","texiao":[]}
+                            ]
+                            });
+                        //    console.log( $scope.questionItems);
+                         //   console.log( $scope.questionItemsBufTmp);
+                        };
+                        $scope.qbtnAddPointTail = function(){
+                           $scope.questionItems.msg_correct_step.push( {"blevel":1,"step":[
+                               {"level":1,"type_operation":"","texiao":[]}
+                           ]
+                           });
+
+                           $scope.questionItemsBufTmp.push(
+                                   {"blevel":1,"step":[
+                               {"level":1,"type_operation":"","texiao":[]}
+                           ]
+                           }
+                          );
+
+
+                        };
+                        $scope.qbtnAddOper = function(items){
+                          //  console.log(items);
+                            items.step.unshift(
+                                    {"level":1,"type_operation":"","texiao":[]}
+                            );
+                        };
+                        $scope.qbtnAddOperTail = function(items){
+                          //  console.log(items);
+                            items.step.push(
+                                    {"level":1,"type_operation":"","texiao":[]}
+                            );
+                        };
+                        //arrayObj.splice(insertPos,0,[item1[, item2[, . . . [,itemN]]]]);//将一个或多个新元素插入到数组的指定位置，插入位置的元素自动后移，返回""。
+                        $scope.qbtnDelOper = function(items,index,pindex){
+                            items.step.splice(index,1);
+
+                          //  $scope.questionItemsBufTmp[pindex].step.splice(index,1);
+                        };
+                        $scope.qbtndelPoint = function(index){
+                          //  console.log(index);
+                          //  console.log(items);
+                            $scope.questionItems.msg_correct_step.splice(index,1);
+                      //      $scope.questionItemsBufTmp.splice(index,1);
+                        };
+                        // 初始化部分
+
+                        $scope.questionInit2 = [
+                            {
+                                "type_operation": "valve",
+                                "key": "v_ff",
+                                "value": "0","texiao":[]
+                            },
+                            {
+                                "type_operation": "valve",
+                                "key": "v_ff",
+                                "value": "1","texiao":[]
+                            }
+                        ];
+                        $scope.questionInit = [
+
+                        ];
+                        $scope.questionInittmp=[];
+
+                        $scope.qinbtnadd = function(){
+                            $scope.questionInit.unshift({
+                                "type_operation": "","texiao":[]
+                            });
+                            $scope.questionInittmp.unshift({
+                                "type_operation": "","texiao":[]
+                            });
+                        };
+                        $scope.qinbtndel = function(index){
+                            $scope.questionInit.splice(index,1);
+                            $scope.questionInittmp.splice(index,1);
+                        };
+                        $scope.xclickinit = function(items,x,y,z){
+                           if(!items)
+                                return;
+
+                            for(var i = 0 ;i <items.items.length;i++)
+                            {
+                                // console.log(items.items[i]);
+                                if(items.items[i].key == x)
+                                {
+                                    $scope.selected3in = items.items[i];
+
+                                    for(var j = 0; j< items.items[i].items.length;j++)
+                                    {
+                                        if(items.items[i].items[j].key == y)
+                                        {
+                                            //  console.log(items.items[i].items[j]);
+                                            $scope.selected4in =items.items[i].items[j];
+                                            for(var k = 0; k< items.items[i].items[j].items.length;k++)
+                                            {
+                                                if(items.items[i].items[j].items[k].value == z)
+                                                {
+                                                    $scope.selected5in = items.items[i].items[j].items[k];
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if(!x)
+                                $scope.selected3in = "";
+                            if(!y)
+                                $scope.selected4in = "";
+                            if(!z)
+                                $scope.selected5in = "";
+                         //   console.log("");
+                        };
+                        $scope.GetInit = function(){
+                            return JSON.stringify( $scope.questionInittmp, null, 2);
+                        };
+
+                        /// 题目的分类 ，难以成都
+                        $scope.xType = {
+                            "tType":[
+                                {"key":"type_renzhi","caption":"认知题目"},
+                                {"key":"type_yunxing","caption":"运行题目"},
+                                {"key":"type_shigu","caption":"事故题目"}
+                            ],
+                            "tTypeHard":[
+                                {"key":"hard_1","caption":"★"},
+                                {"key":"hard_2","caption":"★★"},
+                                {"key":"hard_3","caption":"★★★"},
+                                {"key":"hard_4","caption":"★★★★"},
+                                {"key":"hard_5","caption":"★★★★★"}
+                            ]
+                        };
+                        $scope.GetAllJsons = function(){
+                                   //     console.log($scope.selected);
+                            var s1 = {key:"",caption:""};
+                            var s2 = {key:"",caption:""};
+                            if(typeof($scope.selected)!="undefined"){
+                              //  console.log($scope.selected.key);
+                                if( $scope.selected!=null && $scope.selected.key!=null){
+                                    s1= {key:$scope.selected.key,caption:$scope.selected.caption};
+                                    s2= {key:$scope.selected2.key,caption:$scope.selected2.caption};
+                                }
+
+                            }
+
+                            var data ={
+                                "caption":$scope.dbcaption,
+                                "boilertype":s1,
+                                "boileropertype":s2,
+                                "opertype":$scope.tType,
+                                "hard":$scope.tTypeHard,
+                                "remark":$scope.dbremarkTmp,
+                                "question":{
+                                    "init":$scope.questionInittmp,
+                                    "step": $scope.questionItemsBufTmp
+                                }
+                            };
+                            return JSON.stringify( data, null, 2);
+                        };
+                        $scope.GetAllJsons2 = function(){
+
+                            return JSON.stringify( $scope.questionItems.msg_correct_step, null, 2);
+                        };
+                        $scope.addToDb = function(){
+
+                            // 标题   $scope.dbcaption;
+
+                            // 锅炉类型 $scope.selected.key;
+
+                            // 题目分类 认知、运行、事故    $scope.xType.tTypeHard;
+
+                            // 难度等级     $scope.xType.tType;
+
+                            // 初始化  $scope.questionInittmp;
+
+                            // 操作步骤     $scope.questionItemsBufTmp;
+
+                            // 备注   $scope.dbremark
+                            var data ={
+                                "caption":$scope.dbcaption,
+                                "boilertype":{key:$scope.selected.key,caption:$scope.selected.caption},
+                                "boileropertype":{key:$scope.selected2.key,caption:$scope.selected2.caption},
+                                "opertype":$scope.tType,
+                                "hard":$scope.tTypeHard,
+                                "remark":$scope.dbremarkTmp,
+                                "question":{
+                                    "init":$scope.questionInittmp,
+                                    "step": $scope.questionItemsBufTmp
+                                }
+                            };
+
+                          //  console.log(data);
+                            $http.post("/gladdquestion",data).success(function(data2,status,headers,config){
+                            // console.log(data2);
+                                toastr.success('插入数据库成功', '系统消息');
+                                $('#reEditModal').modal('hide');
+                                $scope.tmpDatatmp.id = data2.data.insertId;
+                                $scope.tmpDatatmp.boilertype = $scope.selected.caption;
+                                $scope.tmpDatatmp.opertype = $scope.tType.caption;
+                                $scope.tmpDatatmp.caption = $scope.dbcaption;
+                                var myDate = new Date();
+                                $scope.tmpDatatmp.time =  myDate.toLocaleString( );
+                                $scope.tmpDatatmp.hard =  $scope.tTypeHard.caption;
+                                $scope.tmpDatatmp.remark =  $scope.dbremarkTmp;
+
+
+                                $scope.$emit("pCtr1DataAdd", 0,$scope.tmpDatatmp);
+                            }).error(function(data,status,headers,config){
+                                alert("error");
+                                toastr.error('插入数据库错误', '系统消息');
+                            })
+
+
+
+                        };
+                        $scope.updateToDb = function(){
+
+                            // 标题   $scope.dbcaption;
+
+                            // 锅炉类型 $scope.selected.key;
+
+                            // 题目分类 认知、运行、事故    $scope.xType.tTypeHard;
+
+                            // 难度等级     $scope.xType.tType;
+
+                            // 初始化  $scope.questionInittmp;
+
+                            // 操作步骤     $scope.questionItemsBufTmp;
+
+                            // 备注   $scope.dbremark
+                            var data ={
+                                "caption":$scope.dbcaption,
+                                "boilertype":{key:$scope.selected.key,caption:$scope.selected.caption},
+                                "boileropertype":{key:$scope.selected2.key,caption:$scope.selected2.caption},
+                                "opertype":$scope.tType,
+                                "hard":$scope.tTypeHard,
+                                "remark":$scope.dbremarkTmp,
+                                "id":$scope.tmpDataId,
+                                "question":{
+                                    "init":$scope.questionInittmp,
+                                    "step": $scope.questionItemsBufTmp
+                                }
+                            };
+
+                         //   console.log(data);
+                            $http.post("/glupdatequestion",data).success(function(data2,status,headers,config){
+                            //    console.log(data2);
+                                toastr.success('修改成功', '系统消息');
+                                $('#reEditModal').modal('hide');
+
+                                $scope.tmpDatatmp.boilertype = $scope.selected.caption;
+                                $scope.tmpDatatmp.opertype = $scope.tType.caption;
+                                $scope.tmpDatatmp.caption = $scope.dbcaption;
+                                var myDate = new Date();
+                                $scope.tmpDatatmp.time =  myDate.toLocaleString( );
+                                $scope.tmpDatatmp.hard =  $scope.tTypeHard.caption;
+                                $scope.tmpDatatmp.remark =  $scope.dbremarkTmp;
+
+                                $scope.$emit("pCtr1DataChange", $scope.Pos,$scope.tmpDatatmp);
+                            }).error(function(data,status,headers,config){
+                                alert("error");
+                                toastr.error('修改错误', '系统消息');
+                            })
+
+
+
+                        };
+                        $scope.users = [
+                            {name:'a',id:'1'},
+                            {name:'b',id:'2'},
+                            {name:'c',id:'3'}
+                        ];
+                        $scope.selectedss='2';//id的值，区分类型
+                        $scope.selectedss=$scope.users[2].id;//如果想要第一个值
+                        $scope.addTx = function(m){
+                            console.log(m);
+
+                            m.texiao.unshift( {"level":1,"type_operation":"valve","key":"v_fkf","value":"0","Score":4});
+                        }
+
+
+                    })
+
+           ;
+    myApp.factory('Data', function() {
+        return[];
+    });
+    myApp.factory('tmpData', function() {
+        return [];
+    });
+</script>
+</body>
+</html>

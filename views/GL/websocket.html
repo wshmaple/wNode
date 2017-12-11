@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+       
+       
+        <title>内网交互</title>
+
+        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+        <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    </head>
+    <body>
+	<div ng-app="myApp" ng-controller="myCtrl">
+		<div>
+			<button ng-click="loadquestion();">加载</button>
+			<h6>
+				认知题目
+				<table border="1">
+					<thead>
+					<tr>
+						<th>编号</th>
+						<th>操作</th>
+						<th>类型</th>
+						<th>名称</th>
+						<th>难度</th>
+						<th>备注</th>
+						<th>发送</th>
+
+					</tr>
+					</thead>
+					<tbody>
+					<tr ng-repeat="x in qItems | filter:'认知题目'">
+						<td>{{$index}}</td>
+						<td><input type="radio"  name="name1" ng-value="x.id" ng-model="formData.state1" /> </td>
+						<td>{{x.boilertype}}</td>
+						<td>{{x.caption}}</td>
+						<td>{{x.hard}}</td>
+						<td>{{x.remark}}</td>
+
+						<td><button ng-click="aSend(x.id)">发送</button></td>
+
+					</tr>
+					</tbody>
+				</table>
+				运行题目
+				<table border="1">
+					<thead>
+					<tr>
+						<th>编号</th>
+						<th>操作</th>
+						<th>类型</th>
+						<th>名称</th>
+						<th>难度</th>
+						<th>备注</th>
+						<th>发送</th>
+
+					</tr>
+					</thead>
+					<tbody>
+					<tr ng-repeat="x in qItems | filter:'运行题目'">
+						<td>{{$index}}</td>
+						<td><input type="radio"  name="name2" ng-value="x.id" ng-model="formData.state2" /> </td>
+						<td>{{x.boilertype}}</td>
+						<td>{{x.caption}}</td>
+						<td>{{x.hard}}</td>
+						<td>{{x.remark}}</td>
+						<td><button ng-click="aSend(x.id)">发送</button></td>
+					</tr>
+					</tbody>
+				</table>
+				事故题目
+				<table border="1">
+					<thead>
+					<tr>
+						<th>编号</th>
+						<th>操作</th>
+						<th>类型</th>
+						<th>名称</th>
+						<th>难度</th>
+						<th>备注</th>
+						<th>发送</th>
+
+					</tr>
+					</thead>
+					<tbody>
+					<tr ng-repeat="x in qItems | filter:'事故题目'">
+						<td>{{$index}}</td>
+						<td><input type="radio"  name="name3" ng-value="x.id" ng-model="formData.state3" /> </td>
+						<td>{{x.boilertype}}</td>
+						<td>{{x.caption}}</td>
+						<td>{{x.hard}}</td>
+						<td>{{x.remark}}</td>
+						<td><button ng-click="aSend(x.id)">发送</button></td>
+
+					</tr>
+					</tbody>
+				</table>
+			</h6>
+		</div>
+	</div>
+  
+
+
+
+        <script src="/socket.io-client/dist/socket.io.js"></script>
+
+
+	    <script src="js/jquery.min.js?v=2.1.4"></script>
+	    <script type="text/javascript" src="/angularjs/angular.min.js"></script>
+
+	<script>
+		var app = angular.module("myApp", []);
+
+		app.controller("myCtrl", function($scope,$http) {
+			$scope.name = "adsfasd;fkllkasd";
+			var socket = io.connect();
+			socket.on('connect', function() {
+
+				var date = new Date();
+				var nickName = "test" + date.getMilliseconds();
+				console.log(nickName);
+				if (nickName.trim().length != 0) {
+					console.log(nickName + "login");
+					socket.emit('login', nickName);
+				}
+			});
+			socket.on('loginSuccess', function() {
+				console.log("loginSuccess");
+				//document.getElementById('loginWrapper').style.display = 'none';
+				//document.getElementById('messageInput').focus();
+			});
+			socket.on('newMsg', function(user, msg, color) {
+
+				console.log(msg);
+				console.log(color);
+			});
+
+			$scope.qItems=[];
+			$scope.msgShow= function () {
+				console.log("msgShow");
+			};
+
+		   $scope.loadquestion = function(){
+			console.log("loadquestion");
+			$.ajax({
+				method : 'post',
+				url : '/glselectquestion',
+				data:"",
+				success:function(resp){
+					if(resp.code === "0" || resp.code === 0 ){
+						$scope.qItems=resp.data;
+						$scope.$apply();
+					}
+				},
+				error:function(resp){
+					console.log('aa');
+				}
+			});
+		};
+		   $scope.aSend = function (id) {
+				console.log(id);
+
+			   socket.emit('postMsg', {'id':id}, "#ffff");
+			}
+
+		});
+	</script>
+
+    </body>
+</html>

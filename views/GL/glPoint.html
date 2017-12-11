@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>操控点维护</title>
+
+    <link href="css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <!-- Data Tables -->
+    <link href="css/animate.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./angular-datatables/dist/css/angular-datatables.css">
+    <link href="css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+    <link href="css/style.min862f.css?v=4.1.0" rel="stylesheet">
+    <style type="text/css">
+        .td{border:solid #add9c0; border-width:0px 1px 1px 0px; padding:10px 0px;}
+        .table{border:solid #add9c0; border-width:1px 0px 0px 1px;}
+    </style>
+    <style type="text/css">
+             label {
+            padding: 5px 10px;
+                    border: 1px solid #fff;
+               }
+            .error {
+                    border-color: #f00;
+                   }
+            </style>
+</head>
+<body>
+<div>
+    <div ng-app ="myModule" >
+        <div ng-controller="pCtrlTree">
+            <div class="ibox float-e-margins">
+                <div  class="wrapper wrapper-content animated fadeInRight">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="ibox float-e-margins">
+                                <div>
+                                <div class="ibox-content">
+                                    <h2>数据库:<em>gl_base_gldb</em>   数据表:<em>t_g_point</em></h2>
+                                    <button ng-show="bShow" type="button" class="btn btn-success" ng-click="SaveToDb()">保存到数据库</button>
+                                    <button type="button" class="btn btn-success" ng-click="GetFromDb()">获取最新</button>
+                                    <button type="button" class="btn btn-success" ng-click="SelectFromDb()">查看历史保存<span>该功能未实现</span></button>
+                                    <div>
+                                        <textarea rows="5" cols="140" ng-model="dbremark" placeholder="数据库保存备注:remark">备注描述</textarea>
+                                        <div >数据版本更新时间:{{dbtime}}</div>
+                                    </div>
+                                </div>
+
+                                    <div>
+                                        <label ng-show="xtreeItem.items.length">
+                                                锅炉类型：
+                                                <select ng-model="selected" ng-options="s.caption + s.key  for s in xtreeItem.items" ng-change="sc1()">
+                                                    <option value="">--请选择--</option>
+                                                </select>
+                                          </label>
+                                        <label ng-show="selected.items.length" >
+                                                操作类型：
+                                            <select ng-model="selected2" ng-options="sh.caption + sh.key for sh in selected.items" ng-change="sc2()" >
+                                                <option value="">--请选择--</option>
+                                            </select>
+                                        </label>
+                                        <label ng-show="selected2.items.length" >
+                                            操作点类型：
+                                            <select ng-model="selected3" ng-options="x.caption + x.key for x in selected2.items" ng-change="sc3()" >
+                                                <option value="">--请选择--</option>
+                                            </select>
+                                        </label>
+                                        <label ng-show="selected3.items.length" >
+                                            操作点：
+                                            <select ng-model="selected4" ng-options="z.caption + z.key for z in selected3.items" ng-change="sc4()" >
+                                                <option value="">--请选择--</option>
+                                            </select>
+                                        </label>
+                                        <div ng-show="false">
+                                            <label ng-show="xtreeItem.items.length"><button type="button" class="btn btn-success">增加锅炉类型</button></label>
+                                            <label ng-show="selected.items.length"><button type="button" class="btn btn-success">增加操作类型</button></label>
+                                            <label ng-show="selected2.items.length"><button type="button" class="btn btn-success">增加操作点类型</button></label>
+                                            <label ng-show="selected3.items.length"></label>
+                                        </div>
+                                        <div>
+
+
+                                        </div>
+
+
+                                    </div>
+
+                                </div>
+
+                                <div ng-show="xtreeItem.items.length"  ng-repeat="x in xtreeItem.items | filter:myFilerBoiler">
+
+                                    <div ng-show="selected.items.length" ng-repeat="y in x.items | filter:myFilterType " >
+
+
+                                        <div ng-show="selected2.items.length" ng-repeat="m in y.items | filter:myFilterPoint" >
+
+                                            <button type="button" class="btn btn-success" ng-click="btnMainAddPoint(m)">增加操作点</button>
+                                            <table border="1" bgcolor="#0000cd" >
+                                                <tr>
+                                                    <th width="200">描述</th>
+                                                    <th width="400">内容</th>
+                                                    <th width="100">操作</th>
+                                                </tr>
+                                                <tr ng-repeat="n in m.items | filter:myFilterPoint2 ">
+                                                    <td>
+                                                        <div><textarea rows="1" cols="20" ng-model="n.caption" placeholder="描述:如 放空阀">{{n.caption}}</textarea></div>
+                                                        <div><textarea rows="1" cols="20" ng-model="n.key" placeholder="Key:如 v_fkf">{{n.key}}</textarea></div>
+                                                    </td>
+                                                   <td>
+                                                       <div >
+                                                           <button type="button" class="btn btn-success" ng-click="btnMainAddPointValue(n)">增加</button>
+                                                           <table border="1" >
+                                                               <tr>
+                                                                   <th width="300">值</th>
+                                                                   <th width="300">描述</th>
+                                                                   <th width="300">操作</th>
+                                                               </tr>
+                                                               <tr ng-repeat="s in n.items " >
+                                                                   <td><textarea rows="1" cols="5" ng-model="s.value">{{s.value}}</textarea></td>
+                                                                   <td><textarea rows="1" cols="20" ng-model="s.caption">{{s.caption}}</textarea></td>
+                                                                   <td><button class="btn btn-mini btn-danger icon-remove" type="button" ng-click="btnMainDelPointValue(n.items,$index)">x</button></td>
+                                                               </tr>
+                                                           </table>
+                                                       </div>
+                                                   </td>
+                                                    <td><button class="btn btn-mini btn-danger" type="button" ng-click="btnMainDelPointValue(m.items,$index)">x</button></td>
+                                                </tr>
+                                            </table>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+    </div>
+</div>
+<script src="js/jquery.min.js?v=2.1.4"></script>
+<script src="js/bootstrap.min.js?v=3.3.6"></script>
+<!-- angularjs -->
+<script type="text/javascript" src="/angularjs/angular.js"></script>
+<script src="js/plugins/jeditable/jquery.jeditable.js"></script>
+<script src="js/plugins/dataTables/jquery.dataTables.js"></script>
+<script src="./angular-datatables/dist/angular-datatables.min.js"></script>
+<script src="./file-saver/filesaver.min.js"></script>
+<script src="js/plugins/dataTables/dataTables.bootstrap.js"></script>
+<script >
+    //var
+    var myApp =  angular.module('myModule',  ['datatables'])
+
+           .controller('pCtrlTree',function($scope,$http){
+                $scope.dbremark = "";
+                $scope.dbtime = "";
+                $scope.sBoilerType = "";//一级
+                $scope.sBoilerOper = "";
+                $scope.sBoilerItem = "";
+                $scope.selectBoiler = { "type_boiler":"ranyou_reshui",
+                    "caption":"燃油热水锅炉"};
+                $scope.xtree = {
+                    "items_boiler": {
+                        "key": "type_boiler",
+                        "caption":"锅炉类型",
+                        "values": [
+                            {
+                                "value" : "ranyou_reshui","caption" : "燃油热水锅炉"
+                            },
+                            {
+                                "value" : "ranyou_zhengqi","caption" : "燃油蒸汽锅炉"
+                            },
+                            {
+                                "value" : "ranqi_reshui","caption" : "燃气热水锅炉"
+                            },
+                            {
+                                "value" : "ranqi_zhengqi","caption" : "燃气蒸汽锅炉"
+                            }
+                        ]
+                    },
+                    "items_oper":{
+                        "key":"type_boiler_Opration",
+                        "caption":"锅炉操作大分类",
+                        "values":[
+                            {"value":"type_opration","caption":"操作点"},
+                            {"value":"Type_Device","caption":"认知设备"}
+                        ]
+                    },
+                    "items_oper_type":{
+                        "key":"type_operation",
+                        "caption":"操作点大分类",
+                        "values":[
+                            {"value" : "ani" , "caption" : "动画"},
+                            {"value" : "par" , "caption" : "特效"},
+                            {"value" : "meter" , "caption" : "仪表"},
+                            {"value" : "valve" , "caption" : "阀门"},
+                            {"value" : "buffer" , "caption" : "挡板"},
+                            {"value" : "cock" , "caption" : "旋塞"},
+                            {"value" : "switch" , "caption" : "开关"},
+                            {"value" : "other1" , "caption" : "预留项一"},
+                            {"value" : "other2" , "caption" : "预留项二"}
+                        ]
+                    },
+                    "items_device_type":{
+                        "key":"Type_Device",
+                        "caption":"设备认知操作点",
+                        "values":[
+                            {"value" : "YanFeng" , "caption" : "烟风系统"},
+                            {"value" : "QiShui" , "caption" : "汽水系统"},
+                            {"value" : "other1" , "caption" : "预留项一"},
+                            {"value" : "other2" , "caption" : "预留项二"}
+                        ]
+
+                    }
+                };
+                $scope.itemTmp  = {
+                    "key":"ranqi_zhengqi",
+                    "caption":"燃气蒸汽锅炉",
+                    "items":[
+                        {
+                            "key":"type_opration",
+                            "caption":"操作类",
+                            "items":[
+                                {
+                                    "key":"ani",
+                                    "caption":"动画",
+                                    "items":[
+
+                                    ]
+                                },
+                                {
+                                    "key":"par",
+                                    "caption":"特效",
+                                    "items":[
+
+                                    ]
+                                }
+                                ,
+                                {
+                                    "key":"meter",
+                                    "caption":"仪表",
+                                    "items":[
+
+                                    ]
+                                }
+                                ,
+                                {
+                                    "key":"valve",
+                                    "caption":"阀门",
+                                    "items":[
+                                        {"key":"v_fkf",
+                                            "caption":"放空阀",
+                                            "items":[
+                                                {"value":"0","caption":"关闭"},
+                                                {"value":"1","caption":"打开"}
+                                            ]
+                                        },
+                                        {"key":"v_ff",
+                                            "caption":"阀门一",
+                                            "items":[
+                                                {"value":"0","caption":"关闭"},
+                                                {"value":"1","caption":"打开"}
+                                            ]
+                                        },
+                                        {"key":"v_f2",
+                                            "caption":"阀门二",
+                                            "items":[
+                                                {"value":"0","caption":"关闭"},
+                                                {"value":"1","caption":"打开"}
+                                            ]
+                                        }
+                                    ]
+                                }
+                                ,
+                                {
+                                    "key":"buffer",
+                                    "caption":"挡板",
+                                    "items":[
+
+                                    ]
+                                }
+                                ,
+                                {
+                                    "key":"cock",
+                                    "caption":"旋塞",
+                                    "items":[
+
+                                    ]
+                                }
+                                ,
+                                {
+                                    "key":"switch",
+                                    "caption":"开关",
+                                    "items":[
+
+                                    ]
+                                }
+                                ,
+                                {
+                                    "key":"other1",
+                                    "caption":"预留一",
+                                    "items":[
+
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "key":"Type_Device",
+                            "caption":"认知类",
+                            "items":[
+                                {
+                                    "key":"YanFeng",
+                                    "caption":"烟风系统",
+                                    "items":[
+
+                                    ]
+                                },
+                                {
+                                    "key":"QiShui",
+                                    "caption":"汽水系统",
+                                    "items":[
+
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                };
+                $scope.xtreeItem = {};
+                $scope.xtreeItem2 ={
+                    "items":[
+                        {
+                            "key":"ranyou_reshui",
+                            "caption":"燃油热水锅炉",
+                            "items":[
+                                {
+                                    "key":"type_opration",
+                                    "caption":"操作类",
+                                    "items":[
+                                        {
+                                            "key":"ani",
+                                            "caption":"动画",
+                                            "items":[
+
+                                            ]
+                                        },
+                                        {
+                                            "key":"par",
+                                            "caption":"特效",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"meter",
+                                            "caption":"仪表",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"valve",
+                                            "caption":"阀门",
+                                            "items":[
+                                                {"key":"v_fkf",
+                                                    "caption":"放空阀",
+                                                    "items":[
+                                                        {"value":"0","caption":"关闭"},
+                                                        {"value":"1","caption":"打开"}
+                                                    ]
+                                                },
+                                                {"key":"v_ff",
+                                                    "caption":"阀门一",
+                                                    "items":[
+                                                        {"value":"0","caption":"关闭"},
+                                                        {"value":"1","caption":"打开"}
+                                                    ]
+                                                },
+                                                {"key":"v_f2",
+                                                    "caption":"阀门二",
+                                                    "items":[
+                                                        {"value":"0","caption":"关闭"},
+                                                        {"value":"1","caption":"打开"}
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"buffer",
+                                            "caption":"挡板",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"cock",
+                                            "caption":"旋塞",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"switch",
+                                            "caption":"开关",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"other1",
+                                            "caption":"预留一",
+                                            "items":[
+
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "key":"Type_Device",
+                                    "caption":"认知类",
+                                    "items":[
+                                        {
+                                            "key":"YanFeng",
+                                            "caption":"烟风系统",
+                                            "items":[
+
+                                            ]
+                                        },
+                                        {
+                                            "key":"QiShui",
+                                            "caption":"汽水系统",
+                                            "items":[
+
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "key":"ranyou_zhengqi",
+                            "caption":"燃油蒸汽锅炉",
+                            "items":[
+                                {
+                                    "key":"type_opration",
+                                    "caption":"操作类",
+                                    "items":[
+                                        {
+                                            "key":"ani",
+                                            "caption":"动画",
+                                            "items":[
+
+                                            ]
+                                        },
+                                        {
+                                            "key":"par",
+                                            "caption":"特效",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"meter",
+                                            "caption":"仪表",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"valve",
+                                            "caption":"阀门",
+                                            "items":[
+                                                {"key":"v_fkf",
+                                                    "caption":"放空阀",
+                                                    "items":[
+                                                        {"value":"0","caption":"关闭"},
+                                                        {"value":"1","caption":"打开"}
+                                                    ]
+                                                },
+                                                {"key":"v_ff",
+                                                    "caption":"阀门一",
+                                                    "items":[
+                                                        {"value":"0","caption":"关闭"},
+                                                        {"value":"1","caption":"打开"}
+                                                    ]
+                                                },
+                                                {"key":"v_f2",
+                                                    "caption":"阀门二",
+                                                    "items":[
+                                                        {"value":"0","caption":"关闭"},
+                                                        {"value":"1","caption":"打开"}
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"buffer",
+                                            "caption":"挡板",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"cock",
+                                            "caption":"旋塞",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"switch",
+                                            "caption":"开关",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"other1",
+                                            "caption":"预留一",
+                                            "items":[
+
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "key":"Type_Device",
+                                    "caption":"认知类",
+                                    "items":[
+                                        {
+                                            "key":"YanFeng",
+                                            "caption":"烟风系统",
+                                            "items":[
+
+                                            ]
+                                        },
+                                        {
+                                            "key":"QiShui",
+                                            "caption":"汽水系统",
+                                            "items":[
+
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "key":"ranqi_reshui",
+                            "caption":"燃气热水锅炉",
+                            "items":[
+                                {
+                                    "key":"type_opration",
+                                    "caption":"操作类",
+                                    "items":[
+                                        {
+                                            "key":"ani",
+                                            "caption":"动画",
+                                            "items":[
+
+                                            ]
+                                        },
+                                        {
+                                            "key":"par",
+                                            "caption":"特效",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"meter",
+                                            "caption":"仪表",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"valve",
+                                            "caption":"阀门",
+                                            "items":[
+                                                {"key":"v_fkf",
+                                                    "caption":"放空阀",
+                                                    "items":[
+                                                        {"value":"0","caption":"关闭"},
+                                                        {"value":"1","caption":"打开"}
+                                                    ]
+                                                },
+                                                {"key":"v_ff",
+                                                    "caption":"阀门一",
+                                                    "items":[
+                                                        {"value":"0","caption":"关闭"},
+                                                        {"value":"1","caption":"打开"}
+                                                    ]
+                                                },
+                                                {"key":"v_f2",
+                                                    "caption":"阀门二",
+                                                    "items":[
+                                                        {"value":"0","caption":"关闭"},
+                                                        {"value":"1","caption":"打开"}
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"buffer",
+                                            "caption":"挡板",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"cock",
+                                            "caption":"旋塞",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"switch",
+                                            "caption":"开关",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"other1",
+                                            "caption":"预留一",
+                                            "items":[
+
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "key":"Type_Device",
+                                    "caption":"认知类",
+                                    "items":[
+                                        {
+                                            "key":"YanFeng",
+                                            "caption":"烟风系统",
+                                            "items":[
+
+                                            ]
+                                        },
+                                        {
+                                            "key":"QiShui",
+                                            "caption":"汽水系统",
+                                            "items":[
+
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "key":"ranqi_zhengqi",
+                            "caption":"燃气蒸汽锅炉",
+                            "items":[
+                                {
+                                    "key":"type_opration",
+                                    "caption":"操作类",
+                                    "items":[
+                                        {
+                                            "key":"ani",
+                                            "caption":"动画",
+                                            "items":[
+
+                                            ]
+                                        },
+                                        {
+                                            "key":"par",
+                                            "caption":"特效",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"meter",
+                                            "caption":"仪表",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"valve",
+                                            "caption":"阀门",
+                                            "items":[
+                                                {"key":"v_fkf",
+                                                    "caption":"放空阀",
+                                                    "items":[
+                                                        {"value":"0","caption":"关闭"},
+                                                        {"value":"1","caption":"打开"}
+                                                    ]
+                                                },
+                                                {"key":"v_ff",
+                                                    "caption":"阀门一",
+                                                    "items":[
+                                                        {"value":"0","caption":"关闭"},
+                                                        {"value":"1","caption":"打开"}
+                                                    ]
+                                                },
+                                                {"key":"v_f2",
+                                                    "caption":"阀门二",
+                                                    "items":[
+                                                        {"value":"0","caption":"关闭"},
+                                                        {"value":"1","caption":"打开"}
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"buffer",
+                                            "caption":"挡板",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"cock",
+                                            "caption":"旋塞",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"switch",
+                                            "caption":"开关",
+                                            "items":[
+
+                                            ]
+                                        }
+                                        ,
+                                        {
+                                            "key":"other1",
+                                            "caption":"预留一",
+                                            "items":[
+
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "key":"Type_Device",
+                                    "caption":"认知类",
+                                    "items":[
+                                        {
+                                            "key":"YanFeng",
+                                            "caption":"烟风系统",
+                                            "items":[
+
+                                            ]
+                                        },
+                                        {
+                                            "key":"QiShui",
+                                            "caption":"汽水系统",
+                                            "items":[
+
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                };
+                $scope.GetXtreeItem = function (){
+                  //  console.log($scope.xtreeItem);
+                    return JSON.stringify($scope.xtreeItem);
+                };
+
+                $scope.myFilterPoint = function(item){
+                    if($scope.selected3 != null && $scope.selected3 !="")
+                    {
+                        return item.key ==$scope.selected3.key;
+                    }
+                    else {
+                        return "";
+                    }
+                };
+                $scope.myFilterPoint2 = function(item){
+                    if($scope.selected4 != null && $scope.selected4 !="")
+                    {
+                        return item.key ==$scope.selected4.key;
+                    }
+                    else {
+                        return item;
+                    }
+                };
+                $scope.myFilerBoiler = function(item){
+                    if($scope.selected != null && $scope.selected !="")
+                    {
+                        return item.key ==$scope.selected.key;
+                    }
+                    else {
+                        return "";
+                    }
+                };
+                $scope.myFilerType = function(item){
+                    if($scope.selected2 != null && $scope.selected2 !="")
+                    {
+                        return item.key ==$scope.selected2.key;
+                    }
+                    else {
+                        return "";
+                    }
+                };
+                $scope.sc1 = function(){
+                   // console.log("sc1");
+                    $scope.selected2 = "";
+                    $scope.selected3 = "";
+                    $scope.selected4 = "";
+                };
+                $scope.sc2 = function(){
+
+                    $scope.selected3 = "";
+                    $scope.selected4 = "";
+                };
+                $scope.sc3 = function(){
+                    $scope.selected4 = "";
+                };
+                $scope.sc4 = function(){
+
+                };
+
+                $scope.btnAddPointType = function(){
+
+                    $('#TypeEditModal').modal({
+                        keyboard: true
+                    });
+                };
+
+                $scope.submitSave = function(){
+
+                };
+
+                $scope.btnMainAddPoint = function(items){
+                    items.items.unshift(
+                            {"key":"x_xxxx",
+                        "caption":"描述",
+                        "items":[
+                            {"value":"0","caption":"关闭"},
+                            {"value":"1","caption":"打开"}
+                        ]
+                    }
+                    );
+                };
+
+                $scope.btnMainAddPointValue = function(items){
+                    items.items.unshift(
+                            {"value":"1","caption":"打开"}
+                    );
+                };
+
+                $scope.btnMainDelPointValue = function(items,index){
+                    if (confirm("你确定要删除吗？")) {
+                        items.splice(index,1);
+                    }
+                };
+
+                $scope.SaveToDb = function(){
+                  /*  $.ajax({
+                        method : 'POST',
+                        url : '/savetree',
+                        data:{data:$scope.xtreeItem},
+                        success:function(resp){
+                            if(resp.code === "0" || resp.code === 0 ){
+
+                            }
+                            else
+                            {
+                                console.log("删除失败了");
+                            }
+                        },
+                        error:function(resp){
+                            console.log('aa');
+                        }
+                    });*/
+                    $http.post("/savetree",{json:$scope.xtreeItem,dbremark:$scope.dbremark,dbtime:$scope.dbtime}).success(function(data,status,headers,config){
+                        alert("save success");
+                    }).error(function(data,status,headers,config){
+                        alert("error");
+                    })
+                };
+                        $scope.bShow = false;
+                $scope.GetFromDb = function(){
+                    $http.post("/gettreelast").success(function(data,status,headers,config){
+                    //    console.log(data.data[0].json);
+                    //    console.log(data.data[0].remark);
+                    //    console.log(data.data[0].time);
+                        $scope.dbtime = data.data[0].time;
+                        $scope.dbremark = data.data[0].remark;
+                        $scope.xtreeItem = JSON.parse(data.data[0].json);
+                     //   alert("error");
+                    }).error(function(data,status,headers,config){
+                        alert("error");
+                    })
+                    $scope.bShow = true;
+                };
+
+                $scope.SelectFromDb = function(){
+                  //查看历史
+                };
+                /*
+                $scope.cars = {
+                    car01 : {brand : "Ford", model : "Mustang", color : "red"},
+                    car02 : {brand : "Fiat", model : "500", color : "white"},
+                    car03 : {brand : "Volvo", model : "XC90", color : "black"}
+                }*/
+                $scope.cars = [
+                     {brand : "Ford", model : "Mustang", color : "red"},
+                     {brand : "Fiat", model : "500", color : "white"},
+                     {brand : "Volvo", model : "XC90", color : "black"}
+                ];
+
+
+            })
+           ;
+    myApp.factory('Data', function() {
+        return[];
+    });
+    myApp.factory('tmpData', function() {
+        return [];
+    });
+</script>
+</body>
+</html>

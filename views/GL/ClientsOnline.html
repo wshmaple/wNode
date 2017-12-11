@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>在线列表</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+
+    <!-- Data Tables -->
+    <link href="css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+
+    <link href="css/animate.min.css" rel="stylesheet">
+    <link href="css/style.min862f.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="./angular-datatables/dist/css/angular-datatables.css">
+
+    <link href="css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <style>
+        #drop{
+            border:2px dashed #bbb;
+            -moz-border-radius:5px;
+            -webkit-border-radius:5px;
+            border-radius:5px;
+            padding:25px;
+            text-align:center;
+            font:20pt bold,"Vollkorn";color:#bbb
+        }
+        #b64data{
+            width:100%;
+        }
+    </style>
+</head>
+<body>
+
+<div ng-app ="myModule" >
+
+    <div ng-controller="AngularWayChangeDataCtrl as showCase" >
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>在线列表</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <div >
+                            <form class="form-inline">
+                                <table border="1" datatable="ng" dt-options="showCase.dtOptions" dt-column-defs="showCase.dtColumnDefs" class="row-border hover">
+                                    <thead>
+                                    <tr>
+                                        <th>编号</th>
+                                        <th>桌号</th>
+                                        <th>身份证号</th>
+                                        <th>状态</th>
+                                        <th>标识</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-repeat="x in showCase.clients ">
+                                        <td>{{$index + 1}}</td>
+                                        <td>{{x.deskid}}</td>
+                                        <td>{{x.userid}}</td>
+                                        <td>{{x.state}}</td>
+                                        <td>{{x.socket}}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </form>
+
+
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div  class="modal fade" id="reEditModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog"  >
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">关闭</span></button>
+                        <h4 class="modal-title " id="myModalLabel">弹框</h4>
+                    </div>
+
+                    <div class="modal-body" ng-controller="pCtrl">
+                        <form role="form" >
+                            <div class="ibox float-e-margins">
+                                <div  class="wrapper wrapper-content animated fadeInRight">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="ibox float-e-margins">
+                                                <div width="380">学号：<input type="text" ng-model="tmpDatatmp.uid"></div>
+                                                <div width="380">姓名：<input type="text" ng-model="tmpDatatmp.uname"></div>
+                                                <div width="380">性别：
+                                                    <input type="radio" name="sex" value="男" ng-model="tmpDatatmp.usex" />男
+                                                    <input type="radio" name="sex" value="女" ng-model="tmpDatatmp.usex" />女
+                                                </div>
+                                                <div width="380">身份证号：<input type="text" ng-model="tmpDatatmp.uidnumber"></div>
+                                                <div width="380">电话：<input type="text" ng-model="tmpDatatmp.uphone"></div>
+                                                <div width="380">地址：<input type="text" ng-model="tmpDatatmp.uadress"></div>
+                                                <div ng-show="false" width="380">考试类型：
+                                                    <input type="radio" name="ulevel" value="司机操作" ng-model="tmpDatatmp.ulevel" />司机操作
+                                                    <input type="radio" name="ulevel" value="电气操作" ng-model="tmpDatatmp.ulevel" />电气操作
+                                                </div>
+                                                <div width="380">期号：<input type="text" ng-model="tmpDatatmp.uqihao"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default"
+                                            data-dismiss="modal">关闭
+                                    </button>
+                                    <button id="btnModify" type="button" ng-click="btnSubmit()" class="btn btn-primary">
+                                        提交
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="js/jquery.min.js?v=2.1.4"></script>
+<script src="js/bootstrap.min.js?v=3.3.6"></script>
+<!-- angularjs -->
+<script type="text/javascript" src="/angularjs/angular.js"></script>
+
+<script src="js/plugins/jeditable/jquery.jeditable.js"></script>
+<script src="js/plugins/dataTables/jquery.dataTables.js"></script>
+<script src="./angular-datatables/dist/angular-datatables.min.js"></script>
+<script src="js/plugins/dataTables/dataTables.bootstrap.js"></script>
+<script type="text/javascript" src="/js/plugins/toastr/toastr.js"></script>
+<script src="/socket.io-client/dist/socket.io.js"></script>
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "onclick": null,
+        "showDuration": "400",
+        "hideDuration": "1000",
+        "timeOut": "7000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+</script>
+<script >
+    //var
+    var myApp =  angular.module('myModule', ['datatables'])
+            .controller('AngularWayChangeDataCtrl', function ($scope,Data,tmpData, DTOptionsBuilder, DTColumnDefBuilder){
+                var vm = this;
+                vm.dtOptions = DTOptionsBuilder.newOptions().withPaginationType('full_numbers');
+                vm.dtColumnDefs = [
+                    DTColumnDefBuilder.newColumnDef(0),
+                ];
+                vm.lookSome = lookSome;
+
+                $scope.clients = {};
+                var socket = io.connect();
+                socket.on('connect', function() {
+                    var date = new Date();
+                    var nickName = "test" + date.getMilliseconds();
+                    console.log(nickName);
+                    if (nickName.trim().length != 0) {
+                        console.log(nickName + "login");
+                        socket.emit('login', nickName);
+                    }
+                });
+                socket.on('loginSuccess', function() {
+                    console.log("loginSuccess");
+                });
+                socket.on('newMsg', function(user, msg, color) {
+
+                    console.log(msg);
+                    console.log(color);
+                    var jobj = JSON.parse(msg);
+                    console.log(jobj);
+                    if(jobj.key == "clients"){
+                        $scope.clients = jobj.value;
+                   //     console.log("alksdfkljkalsdfkljasljkdfsadlkjfjkl");
+                        console.log($scope.clients);
+                        vm.clients = jobj.value;
+                        $scope.$apply();
+                    }
+                    else if(jobj.key == "syslogs"){
+
+                    }
+
+                });
+
+
+                function lookSome (){
+                    $scope.$broadcast("Ctr1DataSome", 0,{});
+                    $('#reEditModal').modal({
+                        keyboard: true
+                    });
+                }
+
+            })
+            .controller('pCtrl',function($scope,$http){
+                $scope.pos=["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","AA","AB","AC"];
+                ///////
+                $scope.tmpDatatmp =[];
+                $scope.tmpDatatmp.title = "";
+                $scope.tmpDatatmp.select = [];
+                $scope.delItem = function(pos){
+                    $scope.tmpDatatmp.select.splice(pos,1);
+                };
+                $scope.addItems = function(){
+                    $scope.tmpDatatmp.select.push({uck:false,ck:false,v:"新增选项"});
+                };
+                //////
+                $scope.tmpData =[];
+                $scope.$on("Ctr1DataSome",
+                        function (event,Pos, msg) {
+                            $scope.Pos = Pos;
+                            $scope.bAdd = 2;
+                            $scope.tmpDatatmp = msg;
+                        });
+                $scope.$on("Ctr1DataChange",
+                        function (event,Pos, msg) {
+                            $scope.Pos = Pos;
+                            $scope.bAdd = 0;
+                            $scope.tmpDatatmp = msg;
+                        });
+                $scope.$on("Ctr1DataAdd",
+                        function (event,Pos, msg) {
+                            $scope.Pos = Pos;
+                            $scope.bAdd = 1;
+                            //    $scope.tmpDatatmp = [];
+                            //    console.log($scope.tmpDatatmp);
+                            $scope.tmpDatatmp = msg;
+                            //    console.log($scope.tmpDatatmp);
+                        });
+                ///////////////
+                $scope.btnSubmit = function(){
+                    var data = $scope.tmpDatatmp;
+                    var msg={};
+                    msg = data;
+                    var tmpUrl = "";
+                    var tmpMsg = "";
+                    if($scope.bAdd == 1){
+                        tmpUrl = '/studentAdd';
+                        tmpMsg = "增加";
+                    }
+                    else if($scope.bAdd==0){
+                        tmpUrl = '/studentModify';
+                        msg.id = $scope.tmpDatatmp.id;
+                        tmpMsg = "修改";
+                    }
+                    else if($scope.bAdd==2){
+                        tmpUrl = '/studentqueryAllBySome';
+                        tmpMsg = "查询";
+                    }
+                 //   console.log(msg);
+                    $.ajax({
+                        method : 'post',
+                        url : tmpUrl,
+                        data:msg,
+                        success:function(resp){
+                            var data2 = resp.data;
+                            var tmpMsg="";
+                            if(resp.code === "0" || resp.code === 0 ){
+                                if($scope.bAdd == 1){
+                                    // 增加
+
+                                    $scope.tmpDatatmp.id = data2;
+                                    $scope.$emit("pCtr1DataAdd", 0,$scope.tmpDatatmp);
+                                    toastr.success('增加人员信息成功', '系统消息');
+                                }
+                                else if($scope.bAdd == 0){
+                                    // 修改
+                                 //   tmpMsg = "修改";
+                                    $scope.$emit("pCtr1DataChange", $scope.Pos,$scope.tmpDatatmp);
+                                    toastr.success('修改人员信息成功', '系统消息');
+                                }
+                                else if($scope.bAdd == 2){
+                                    // 条件查询
+                                  //  tmpMsg = "条件查询";
+                                   // console.log("条件查询");
+                                  //  console.log(data2);
+                                    $scope.$emit("pCtr1DataSome", 0,data2);
+                                    toastr.success('查询人员信息成功', '系统消息');
+                                }
+                                $('#reEditModal').modal('hide');
+                            }
+                            else
+                            {
+                                var tmpMsg = "";
+                                if($scope.bAdd == 1){
+                                    tmpMsg = "增加失败，请重试！";
+                                }
+                                else if($scope.bAdd==0){
+                                    tmpMsg = "修改失败，请重试！";
+                                }
+                                else if($scope.bAdd==2){
+                                    tmpMsg = "没有找到您要查找的数据";
+                                }
+                                toastr.error(tmpMsg , '系统消息');
+                            }
+                        },
+                        error:function(resp){
+                            /* Act on the event */
+                            console.log('aa');
+                        }
+                    });
+
+                };
+                $scope.change = function () {
+                //    console.log("$scope.change");
+                    $scope.$emit("pCtr1DataChange", $scope.Pos,$scope.tmpDatatmp);
+                };
+
+            });
+    myApp.factory('Data', function() {
+        return[];
+    });
+    myApp.factory('tmpData', function() {
+        return [];
+    });
+</script>
+</body>
+</html>

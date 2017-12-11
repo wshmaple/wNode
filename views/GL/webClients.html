@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+       
+       
+        <title>内网交互</title>
+
+        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+        <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+
+		<link href="css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+		<link href="css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+
+		<!-- Data Tables -->
+		<link href="css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+
+		<link href="css/animate.min.css" rel="stylesheet">
+		<link href="css/style.min862f.css?v=4.1.0" rel="stylesheet">
+		<link rel="stylesheet" href="./angular-datatables/dist/css/angular-datatables.css">
+
+		<link href="css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+
+    </head>
+    <body>
+
+
+
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h5>在线用户列表</h5>
+				</div>
+
+				<div class="ibox-content">
+					<div ng-app="myApp" ng-controller="myCtrl">
+						<div class="row">
+							<div class="col-md-6">
+								<div>在线个数{{clients.length}}</div>
+								<table class="table" >
+									<thead>
+									<tr>
+										<th>编号</th>
+										<th>桌号</th>
+										<th>身份证号</th>
+										<th>状态</th>
+										<th>标识</th>
+										<th>操作</th>
+									</tr>
+									</thead>
+									<tbody>
+									<tr ng-repeat="x in clients ">
+										<td>{{$index + 1}}</td>
+										<td>{{x.deskid}}</td>
+										<td>{{x.userid}}</td>
+										<td>{{x.state}}</td>
+										<td>{{x.socket}}</td>
+										<td><button class="btn btn-primary btn-xs" ng-click="lookDetail(x.paperid,x.userid)" ng-show="x.userid.length">查看</button></td>
+									</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="col-md-6">
+								<div>身份证号：{{userInfoid}}</div>
+								<table class="table" >
+									<thead>
+									<tr>
+										<th>编号</th>
+										<th>锅炉类型</th>
+										<th>题目分类</th>
+										<th>题目名称</th>
+									</tr>
+									</thead>
+									<tbody>
+									<tr ng-repeat="x in details ">
+										<td>{{$index + 1}}</td>
+										<td>{{x.t1.boilertype.caption}}</td>
+										<td>{{x.t1.opertype.caption}}</td>
+										<td>{{x.t1.caption}}</td>
+
+									</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+        <script src="/socket.io-client/dist/socket.io.js"></script>
+
+
+	    <script src="js/jquery.min.js?v=2.1.4"></script>
+	    <script type="text/javascript" src="/angularjs/angular.min.js"></script>
+
+	<script>
+		var app = angular.module("myApp", []);
+
+		app.controller("myCtrl", function($scope,$http) {
+			$scope.clients = {};
+			var socket = io.connect();
+			socket.on('connect', function() {
+				var date = new Date();
+				var nickName = "test" + date.getMilliseconds();
+				console.log(nickName);
+				if (nickName.trim().length != 0) {
+					console.log(nickName + "login");
+					socket.emit('login', nickName);
+				}
+			});
+			socket.on('loginSuccess', function() {
+				console.log("loginSuccess");
+			});
+			socket.on('newMsg', function(user, msg, color) {
+
+			//	console.log(msg);
+			//	console.log(color);
+				var jobj = JSON.parse(msg);
+			//	console.log(jobj);
+				if(jobj.key == "clients"){
+					$scope.clients = jobj.value;
+				//	console.log("alksdfkljkalsdfkljasljkdfsadlkjfjkl");
+				//	console.log($scope.clients);
+					$scope.$apply();
+				}
+				else if(jobj.key == "syslogs"){
+
+				}
+
+			});
+			$scope.details = "";
+			$scope.userInfoid = "";
+			$scope.lookDetail = function (paperid,userid){
+				// 查看做的试卷
+				$scope.userInfoid = userid;
+				$.ajax({
+					method : 'get',
+					url : '/getpaperbyid',
+					data:{
+						paperid:paperid
+					},
+					success:function(resp){
+						if(resp.code === "0" || resp.code === 0 ){
+							console.log(resp.data);
+							//toastr.success('查询成功了', '系统消息');
+							$scope.details = resp.data;
+						}
+						else
+						{
+						//	toastr.error('操作失败！', '系统消息');
+						}
+					},
+					error:function(resp){
+						console.log('aa');
+					}
+				});
+			}
+
+
+		});
+	</script>
+
+    </body>
+</html>
